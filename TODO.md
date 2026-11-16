@@ -33,9 +33,15 @@
 # pprun (simulation runner)
 
 - [x] Stub page at `/pprun/` (see `pptools.pprun`)
-- [ ] Settle the simulation definition format (DESIGN.md open questions)
-- [ ] Add `pypower_sim` as a dependency (decision #11)
-- [ ] Run simulations in a background process with progress and cancel; write run folders to `outputs/`
+- [x] Settle the simulation definition format (DESIGN.md decision #13)
+- [x] Add `pypower_sim` as a dependency (decisions #11, #21)
+- [x] Run simulations in a background process with progress and cancel; write run folders to `outputs/` (decisions #15, #16; `pptools.pprun.runner`)
+- [x] Settings for every `pypower_sim` time-series option (decision #18)
+- [x] Network tab with ppmodel's views of the model or a re-solved time step (decision #17)
+- [x] Plots and tables of every input panel and output file (decision #20)
+- [ ] Agree decisions 13–21 with the maintainer
+- [ ] List run folders on the front page (DESIGN.md open question)
+- [ ] Run queue for large studies (DESIGN.md open question)
 
 # ppoutput (output manager)
 

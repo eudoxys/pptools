@@ -2,8 +2,9 @@
 
 `create_app` returns the Flask application behind `pptools serve`: the
 front page (`pptools/static/`), a JSON API over the projects in one
-`pptools.project.Workspace`, the ppmodel launcher, and the planned tools'
-pages mounted at `/ppdata/`, `/pprun/` and `/ppoutput/`.
+`pptools.project.Workspace`, the ppmodel launcher, the simulation runner
+at `/pprun/` (`pptools.pprun.server`, its own API), and the planned tools'
+pages mounted at `/ppdata/` and `/ppoutput/`.
 
 API
 ---
@@ -90,7 +91,8 @@ def create_app(root:str,allow_remote:bool=False,shutdown=None,models:ModelServer
     -------
 
       - `Flask`: the application; `app.config["WORKSPACE"]` is the
-        `Workspace` and `app.config["MODELS"]` the `ModelServers`
+        `Workspace`, `app.config["MODELS"]` the `ModelServers`, and
+        `app.config["RUNS"]` the pprun `pptools.pprun.runner.Runs`
     """
     # pylint: disable=too-many-locals,too-many-statements
     app = Flask(__name__,static_folder=None)

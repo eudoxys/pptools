@@ -11,7 +11,7 @@ Examples
 
     >>> from pptools.tools import TOOLS
     >>> [(t["name"],t["status"]) for t in TOOLS]
-    [('ppmodel', 'available'), ('ppdata', 'planned'), ('pprun', 'planned'), ('ppoutput', 'planned')]
+    [('ppmodel', 'available'), ('ppdata', 'planned'), ('pprun', 'available'), ('ppoutput', 'planned')]
 """
 
 import os
@@ -33,7 +33,7 @@ TOOLS = [
      "title":"Time-series data panels",
      "summary":"Construct time-series panels of data (loads, generation, ratings, prices) "
         "for objects in a model, as pypower_sim inputs."},
-    {"name":"pprun","folder":"sims","status":"planned","kind":"blueprint",
+    {"name":"pprun","folder":"sims","status":"available","kind":"blueprint",
      "title":"Simulation runner",
      "summary":"Set up and run quasi-steady time-series simulations of a model and data panels "
         "with pypower_sim."},

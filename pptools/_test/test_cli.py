@@ -72,7 +72,7 @@ def test_tool_starts_server(tool,tmp_path,capsys):
     assert main(["new","s1","-r",root]) == 0
     thread,out = _start(lambda: TOOL_MAINS[tool](["-P","s1","-r",root,"-p",str(port),"--no-browser"]),port)
     with urllib.request.urlopen(f"http://localhost:{port}/{tool}/?project=s1",timeout=5) as res:
-        assert "planned" in res.read().decode()
+        assert ("planned" in res.read().decode()) == (tool != "pprun")
     _exit(port)
     thread.join(5)
     assert not thread.is_alive() and out["code"] == 0
