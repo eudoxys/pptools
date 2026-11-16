@@ -3,7 +3,7 @@
 `create_app` returns the Flask application behind `pptools serve`: the
 front page (`pptools/static/`), a JSON API over the projects in one
 `pptools.project.Workspace`, the ppmodel launcher, and the planned tools'
-pages mounted at `/ppdata/`, `/ppsim/` and `/ppoutput/`.
+pages mounted at `/ppdata/`, `/pprun/` and `/ppoutput/`.
 
 API
 ---
@@ -104,9 +104,9 @@ def create_app(root:str,allow_remote:bool=False,shutdown=None,models:ModelServer
     app.config["SHUTDOWN"] = shutdown or _shutdown
 
     from pptools.ppdata import blueprint as ppdata # pylint: disable=import-outside-toplevel
-    from pptools.ppsim import blueprint as ppsim # pylint: disable=import-outside-toplevel
+    from pptools.pprun import blueprint as pprun # pylint: disable=import-outside-toplevel
     from pptools.ppoutput import blueprint as ppoutput # pylint: disable=import-outside-toplevel
-    for bp in (ppdata,ppsim,ppoutput):
+    for bp in (ppdata,pprun,ppoutput):
         app.register_blueprint(bp,url_prefix=f"/{bp.name}")
 
     @app.before_request

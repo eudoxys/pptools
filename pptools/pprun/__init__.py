@@ -1,13 +1,13 @@
 """Simulation runner (planned)
 
-`ppsim` will be a browser tool to set up and run quasi-steady time-series
+`pprun` will be a browser tool to set up and run quasi-steady time-series
 (QSTS) simulations with `pypower_sim`. It is a stub: the front server
-mounts a placeholder page at `/ppsim/` that lists the planned features and
+mounts a placeholder page at `/pprun/` that lists the planned features and
 the files in the project's `sims/` folder.
 
-The browser tool is reached as `/ppsim/` in the front server and is not
-installed as a `ppsim` command, because `pypower_sim` already installs a
-`ppsim` command (see DESIGN.md decision #7).
+Run it with the `pprun` command (`pptools.pprun.cli`) or from the front
+page. It is named `pprun`, not `ppsim`, because `pypower_sim` already
+installs a `ppsim` command (DESIGN.md decision #7b).
 
 Planned features
 ----------------
@@ -39,6 +39,6 @@ PLANNED = [
     ]
 """Planned features shown on the placeholder page"""
 
-blueprint = stub_blueprint("ppsim","sims","Simulation runner",
+blueprint = stub_blueprint("pprun","sims","Simulation runner",
     "Set up and run quasi-steady time-series simulations of a model and data panels with pypower_sim.",PLANNED)
-"""Flask blueprint mounted at `/ppsim/` by `pptools.server.create_app`"""
+"""Flask blueprint mounted at `/pprun/` by `pptools.server.create_app`"""
