@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["pptools*"]
+exclude = ["pptools*._test*"]
+
+[tool.setuptools.package-data]
+# list every file pattern the package reads at run time
+"*" = ["*.py", "static/*.html", "static/*.css", "static/*.js"]
+
+[tool.setuptools.dynamic]
+dependencies = {file=["requirements.txt"]}
+
+[project]
+name = "pptools"
+version = "0.0.0" # 0.0.0 = unreleased (hidden by `epm index`)
+description = "Browser-based tools to edit, provision, and run time-series simulations of power systems with pypower_sim"
+authors = [
+    {name = "David P. Chassin"},
+    ]
+maintainers = [
+    {name = "David P. Chassin"},
+    ]
+readme = "README.md"
+requires-python = ">=3.10" # CI runs 3.12
+keywords = ["eudoxys","python","pypower","pypower_sim","gridlabd","arras-energy","power-flow","time-series","simulation","editor"]
+license-files = ["LICENSE"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering",
+    "Framework :: Flask",
+    ]
+dynamic = ["dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/eudoxys/pptools"
+Documentation = "https://www.eudoxys.com/pptools"
+Repository = "https://github.com/eudoxys/pptools.git"
+Issues = "https://github.com/eudoxys/pptools/issues"
+
+[project.scripts]
+pptools = "pptools.cli:main"
+ppmodel = "pptools.ppmodel.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["pptools"]
+addopts = "--import-mode=importlib" # test files in several _test folders share names

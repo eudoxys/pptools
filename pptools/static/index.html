@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pptools</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%231f6f5c%22/%3E%3Ccircle cx=%225%22 cy=%2211%22 r=%222%22 fill=%22white%22/%3E%3Ccircle cx=%2211%22 cy=%225%22 r=%222%22 fill=%22white%22/%3E%3Cpath d=%22M5 11L11 5%22 stroke=%22white%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/#"><span class="mark">pp</span>tools</a>
+  <span id="root" class="crumb" title="Projects folder"></span>
+  <span class="spacer"></span>
+  <span id="running" class="running"></span>
+  <span id="version" class="crumb"></span>
+  <button id="exit-btn" title="Stop the pptools server and every model editor it started">Exit</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="side-head">
+      <span>Projects</span>
+      <button id="new-project-btn" class="primary small" title="Create a project folder">New</button>
+    </div>
+    <nav id="project-list"></nav>
+  </aside>
+  <main id="main"></main>
+</div>
+<dialog id="dialog"><form method="dialog" id="dialog-form"></form></dialog>
+<div id="toast" class="toast" hidden></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
