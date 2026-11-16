@@ -3,15 +3,21 @@
 Syntax
 ------
 
-    pptools [-h] [-r ROOT] [--description TEXT] [-p PORT] [--host HOST]
+    pptools [-h] [-P PROJECT] [-r ROOT] [--description TEXT] [-p PORT] [--host HOST]
             [--no-browser] [-d] [-v] [-w] [--version] {serve,new,list} [NAME]
+
+    ppdata [serve] [-P PROJECT] [-r ROOT] [-p PORT] [--host HOST] [--no-browser] [-d] [-v] [-w] [--version]
+    pprun [serve] ...    (same options as ppdata)
+    ppoutput [serve] ... (same options as ppdata)
 
     ppmodel [-h] ... {serve,convert,check} [FILES ...]
 
 Positional arguments
 --------------------
 
-  - `serve`: start the front server and open the front page in a browser
+  - `serve`: start the pptools server and open the page in a browser; if a
+    pptools server is already running on the port, open the page there
+    instead (default and only command of `ppdata`, `pprun`, `ppoutput`)
 
   - `new NAME`: create project `NAME` in the projects folder and print its path
 
@@ -20,12 +26,15 @@ Positional arguments
 Optional arguments
 ------------------
 
+  - `-P|--project PROJECT`: project to open (must exist)
+
   - `-r|--root ROOT`: projects folder (default `~/pptools`, or the
-    `PPTOOLS_ROOT` environment variable)
+    `PPTOOLS_ROOT` environment variable); ignored when a running server is
+    reused
 
   - `--description TEXT`: project description (`new`)
 
-  - `-p|--port PORT`: front server port (default 8040)
+  - `-p|--port PORT`: server port (default 8040)
 
   - `--host HOST`: interface to listen on (default `127.0.0.1`); any other
     value allows remote access, which has no authentication
@@ -40,7 +49,9 @@ Optional arguments
 
   - `--version`: show the package version and exit
 
-`ppmodel` runs the model editor on its own; see `pptools.ppmodel`.
+`pptools` opens the front page, and `ppdata`, `pprun`, and `ppoutput` open
+their tool's page, all on the same server. `ppmodel` runs the model editor
+on its own; see `pptools.ppmodel`.
 
 Description
 -----------
@@ -53,7 +64,7 @@ time-series simulations of power systems with
 |---|---|---|---|
 | `pptools.ppmodel` | available | create and edit network models; check, PF and OPF | `models/` |
 | `pptools.ppdata` | planned | construct time-series data panels for model objects | `data/` |
-| `pptools.ppsim` | planned | set up and run time-series simulations | `sims/` |
+| `pptools.pprun` | planned | set up and run time-series simulations | `sims/` |
 | `pptools.ppoutput` | planned | manage and view simulation outputs | `outputs/` |
 
 The front page (`pptools serve`) is the single entry point. It manages
@@ -78,27 +89,31 @@ Given a projects folder, `pptools serve` is expected to satisfy:
 
   4. Stopping the front server stops every ppmodel server it started.
 
+  5. `ppdata`, `pprun`, and `ppoutput` start the server only if no pptools
+     server answers on the port; otherwise they open their page on the
+     running server, whatever its projects folder.
+
 ```mermaid
 flowchart LR
     front[pptools front page] --> projects[(projects folder)]
     front --> ppmodel[ppmodel\\none server per model]
     front --> ppdata[ppdata]
-    front --> ppsim[ppsim]
+    front --> pprun[pprun]
     front --> ppoutput[ppoutput]
     ppmodel <--> models[/models/]
     ppdata --> data[/data/]
     models --> ppdata
-    models --> ppsim
-    data --> ppsim
-    ppsim <--> pypower_sim[[pypower_sim]]
-    ppsim --> outputs[/outputs/]
+    models --> pprun
+    data --> pprun
+    pprun <--> pypower_sim[[pypower_sim]]
+    pprun --> outputs[/outputs/]
     outputs --> ppoutput
 ```
 
 What is not promised
 --------------------
 
-  - `ppdata`, `ppsim`, and `ppoutput` are placeholders: their pages list
+  - `ppdata`, `pprun`, and `ppoutput` are placeholders: their pages list
     the planned features and the files in their project folder, nothing
     more.
 
@@ -109,7 +124,7 @@ What is not promised
   - Deleting files and projects is permanent (no trash folder).
 
   - Projects store files only; there is no record yet of which data panels
-    and simulations use which models (planned with ppdata and ppsim).
+    and simulations use which models (planned with ppdata and pprun).
 
 Installation
 ------------

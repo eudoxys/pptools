@@ -1,9 +1,11 @@
-# eudoxys/pptools — package design (draft 1)
+# eudoxys/pptools — package design (draft 2)
 
-Status: draft 1 started 2026-11-16 with the repository scaffold; not yet
-agreed with the maintainer. Decisions 1–12 describe the scaffold as built
-and need confirmation; the planned tools (`ppdata`, `ppsim`, `ppoutput`)
-are stubs whose design is still open.
+Status: draft 1 started 2026-11-16 with the repository scaffold; draft 2,
+2026-11-16: simulator tool named `pprun` (decision #7b) and commands for
+`ppdata`, `pprun`, `ppoutput` (decision #7, reversed). Not yet agreed with
+the maintainer: decisions 1–12 describe the scaffold as built and need
+confirmation; the planned tools (`ppdata`, `pprun`, `ppoutput`) are stubs
+whose design is still open.
 
 The model editor has its own design record, inherited from
 `dchassin/ppedit`: [`pptools/ppmodel/DESIGN.md`](pptools/ppmodel/DESIGN.md).
@@ -28,7 +30,7 @@ folder:
 |---|---|---|---|
 | Edit the network model | `ppmodel` (from `dchassin/ppedit`) | available | `models/` |
 | Provision time-series data for model objects | `ppdata` | planned (stub) | `data/` |
-| Set up and run simulations | `ppsim` | planned (stub) | `sims/` → `outputs/` |
+| Set up and run simulations | `pprun` | planned (stub) | `sims/` → `outputs/` |
 | Manage and view outputs | `ppoutput` | planned (stub) | `outputs/` |
 | Manage projects and open the tools | front page (`pptools serve`) | available | the projects folder |
 
@@ -60,17 +62,18 @@ reversed decision in place and note the date.
 
 | # | Decision |
 |---|---|
-| 1 | One repository and one Python package, `pptools`; each tool is a subpackage (`pptools.ppmodel`, `pptools.ppdata`, `pptools.ppsim`, `pptools.ppoutput`) and the front tool is the top-level package. One install, one version, one docs site. |
+| 1 | One repository and one Python package, `pptools`; each tool is a subpackage (`pptools.ppmodel`, `pptools.ppdata`, `pptools.pprun`, `pptools.ppoutput`) and the front tool is the top-level package. One install, one version, one docs site. |
 | 2 | `ppmodel` is `dchassin/ppedit` 0.3.1 (commit `305c858`) moved in and renamed: module paths `ppedit.*` → `pptools.ppmodel.*`, CLI and page name `ppmodel`, POST guard header `X-PPModel`, browser storage keys `ppmodel.*`, environment variable `PPMODEL_CLAUDE_MODEL`. Its design decisions carry over unchanged in `pptools/ppmodel/DESIGN.md`; its tests in `pptools/ppmodel/_test/`; its examples in `examples/ppmodel/`. The history stays in `dchassin/ppedit`. |
 | 3 | Every tool is a local Flask server with a plain HTML/CSS/JS page, no build step and no JS dependencies (as ppmodel decision #2), the same palette and type, and the same local-server guard: loopback `Host` only unless remote access is asked for, and `POST` requests must carry a tool header (`X-PPTools` for the front server; ppmodel decision #29). |
 | 4 | `pptools serve` is the single front tool: it lists, creates, describes, and deletes projects; creates, uploads, downloads, renames, and deletes files in them; and opens each tool on the project's files. Default port 8040 (ppmodel keeps 8050 when run alone). |
 | 5 | A project is a folder `ROOT/NAME/` holding `pptools.json` (`application`, `version`, `name`, `description`, `created`, `modified`, UTC ISO 8601) and the subfolders `models/`, `data/`, `sims/`, `outputs/`. The projects folder `ROOT` is `~/pptools` unless `--root` or `PPTOOLS_ROOT` says otherwise. Folders without `pptools.json` are ignored and never changed. |
 | 6 | Project and file names match `[A-Za-z0-9][A-Za-z0-9_.-]{0,63}`; the front server reads and writes only files directly inside the four subfolders (`Project.resolve`), so nothing outside a project can be reached through its API. |
-| 7 | The installed commands are `pptools` and `ppmodel`. `ppdata`, `ppsim`, and `ppoutput` are reached through the front server (`/ppdata/`, `/ppsim/`, `/ppoutput/`), not installed as commands, because `pypower_sim` already installs a `ppsim` command and both packages are meant to share an environment. |
+| 7 | Every tool has a command: `pptools`, `ppmodel`, `ppdata`, `pprun`, `ppoutput`. `ppdata`, `pprun`, and `ppoutput` open their page (`/<tool>/`, optionally `-P PROJECT`) on the pptools server, starting it if none is running on the port (default 8040) and reusing it otherwise (`pptools.cli.tool_main`), so every tool works on the same projects folder through one server; they take the options of `pptools serve`. `ppmodel` keeps its own server (decision #8). *Reversed 2026-11-16:* draft 1 installed only `pptools` and `ppmodel`. |
+| 7b | The simulation runner is named `pprun` (subpackage `pptools.pprun`, page `/pprun/`, command `pprun`), not `ppsim`, because `pypower_sim` already installs a `ppsim` command and both packages are meant to share an environment (2026-11-16). |
 | 8 | The front server starts one `ppmodel serve` process per open model file (ppmodel holds one case per process, ppmodel decision #1) on a free loopback port, opens it in a new browser tab, reuses it when the same file is opened again, stops it when the file is renamed or deleted, and stops all of them when the front server exits. |
 | 9 | Planned tools are Flask blueprints mounted in the front server at `/<tool>/`, sharing its workspace; until implemented each shows its planned features and the files in its project folder (`pptools/_stub.py`). |
 | 10 | Files in the project folders are the only state: no database, and no server-side record of which data panels or simulations use which model beyond the files themselves. Every file a tool writes is in a format `pypower_sim` (or ppmodel) reads directly, so a project can be used from Python or the command line without `pptools`. |
-| 11 | `pypower_sim` is the simulation engine: `ppdata` writes its input CSV format (`PPData.set_input`), `ppsim` drives `PPModel`/`PPData`/`PPSolver.run_timeseries`, and `ppoutput` reads its output and recorder CSV files and `PPModel.profile`. It becomes a dependency when `ppsim` is implemented (not before, to keep the install light while the tools are stubs). |
+| 11 | `pypower_sim` is the simulation engine: `ppdata` writes its input CSV format (`PPData.set_input`), `pprun` drives `PPModel`/`PPData`/`PPSolver.run_timeseries`, and `ppoutput` reads its output and recorder CSV files and `PPModel.profile`. It becomes a dependency when `pprun` is implemented (not before, to keep the install light while the tools are stubs). |
 | 12 | Sibling Eudoxys packages are dependencies by `git+` URL, never from PyPI: `pypower @ git+https://github.com/eudoxys/pypower`, the same `pypower` that `pypower_sim` uses (ppedit used PyPI `pypower`; all ppmodel tests pass with the Eudoxys build). |
 
 ## Conventions inherited
@@ -96,7 +99,8 @@ sibling packages, not re-argued here:
 pptools/
   __init__.py       package docs (spec, limits); re-exports Workspace, Project,
                     ProjectError, FOLDERS, TOOLS, create_app, main
-  cli.py            main(argv): serve, new, list, --version
+  cli.py            main(argv): serve, new, list, --version; tool_main(tool,argv),
+                    serve(root,host,port,tool,project,browser): start or reuse the server
   project.py        Workspace(root): projects; Project(path): record, folders, files
   tools.py          TOOLS registry; ModelServers(host): ppmodel process per model file
   server.py         create_app(root,allow_remote,shutdown,models): front page, API, blueprints
@@ -104,14 +108,14 @@ pptools/
   static/           front page (index.html, style.css, app.js)
   _test/            front tool tests (fast, no network)
   ppmodel/          model editor (from dchassin/ppedit; see pptools/ppmodel/DESIGN.md)
-  ppdata/           __init__.py: stub blueprint at /ppdata/
-  ppsim/            __init__.py: stub blueprint at /ppsim/
-  ppoutput/         __init__.py: stub blueprint at /ppoutput/
+  ppdata/           __init__.py: stub blueprint at /ppdata/; cli.py: `ppdata` command
+  pprun/            __init__.py: stub blueprint at /pprun/; cli.py: `pprun` command
+  ppoutput/         __init__.py: stub blueprint at /ppoutput/; cli.py: `ppoutput` command
   # planned
   ppdata/panel.py   Panel(model,index): time-series panel for case rows; CSV I/O
   ppdata/server.py  blueprint: panel builder page and API
-  ppsim/sim.py      Simulation(project,definition): load, check, run with pypower_sim
-  ppsim/server.py   blueprint: simulation setup, run, progress, cancel
+  pprun/sim.py      Simulation(project,definition): load, check, run with pypower_sim
+  pprun/server.py   blueprint: simulation setup, run, progress, cancel
   ppoutput/run.py   Run(path): one run folder in outputs/; series, profile, comparison
   ppoutput/server.py blueprint: run list, plots, diagram view
 ```
@@ -125,8 +129,8 @@ pptools/
 | `pptools.json` | project record (decision #5) | front server |
 | `models/*.{py,json,glm,raw}` | network models | ppmodel, uploads |
 | `data/*.csv` | time-series panels in `pypower_sim` input format | ppdata (planned), uploads |
-| `sims/*.json` | simulation definitions | ppsim (planned) |
-| `outputs/<run>/` | one folder per simulation run | ppsim (planned) |
+| `sims/*.json` | simulation definitions | pprun (planned) |
+| `outputs/<run>/` | one folder per simulation run | pprun (planned) |
 
 ### Tools
 
@@ -148,8 +152,8 @@ project route returns the full project (`Project.to_dict`: record fields,
 |---|---|---|
 | network model | `models/` file edited in ppmodel | upload, PYPOWER built-in case |
 | time-series inputs | `data/` panels built in ppdata (planned) | uploaded CSV in `pypower_sim` input format |
-| simulation setup | `sims/` definition built in ppsim (planned) | none |
-| results | `outputs/` run folders written by ppsim (planned) | none |
+| simulation setup | `sims/` definition built in pprun (planned) | none |
+| results | `outputs/` run folders written by pprun (planned) | none |
 
 Workflow, as the front page presents it:
 
@@ -160,7 +164,7 @@ Workflow, as the front page presents it:
 3. **Provision data (planned).** In ppdata, choose a model, pick objects
    and the case columns that vary in time, and build panels with a UTC
    index and one column per case row; save to `data/`.
-4. **Simulate (planned).** In ppsim, combine a model and panels with a time
+4. **Simulate (planned).** In pprun, combine a model and panels with a time
    range and solver options into a definition in `sims/`; run it with
    `pypower_sim` in a background process; each run writes its own folder
    in `outputs/`.
@@ -220,11 +224,11 @@ Example (illustrative only):
 | PF/OPF solvers | `eudoxys/pypower` ✔ |
 | model editor | `pptools.ppmodel` (from `dchassin/ppedit`) ✔ |
 | time-series loop, inputs, outputs, recorders | `pypower_sim.PPSolver.run_timeseries`, `PPData` ✔ |
-| players (`PPData.set_player`) | broken in `pypower_sim` (fails before storing anything; its DESIGN.md "Known issues"); needed only if ppsim uses players |
-| GLM/JSON models in `pypower_sim` | `PPModel` reads Python case files, functions, and dicts; ppsim will convert with `pptools.ppmodel.Case` to the case dict |
+| players (`PPData.set_player`) | broken in `pypower_sim` (fails before storing anything; its DESIGN.md "Known issues"); needed only if pprun uses players |
+| GLM/JSON models in `pypower_sim` | `PPModel` reads Python case files, functions, and dicts; pprun will convert with `pptools.ppmodel.Case` to the case dict |
 | initial OCE in `run_timeseries` | success/failure conditions appear inverted (`pypower_sim` DESIGN.md "Known issues"); avoid `with_oce` until fixed |
 | progress and cancel for long runs | `run_timeseries` `progress` and `stop_test` callbacks ✔ |
-| `ppsim` command name | taken by `pypower_sim`; decision #7 |
+| `ppsim` command name | taken by `pypower_sim`; the runner is `pprun` (decision #7b) |
 
 ## Known issues to handle
 
@@ -247,7 +251,7 @@ Example (illustrative only):
   in one direction; or keep both and let them diverge. Its open issues
   (dchassin/ppedit#11, #12, #13, #16, #17, #24, #25, #33, #54) would move
   or be cross-referenced.
-- **Simulation definition format.** A pptools JSON in `sims/` that ppsim
+- **Simulation definition format.** A pptools JSON in `sims/` that pprun
   turns into `pypower_sim` calls; or `pypower_sim`'s own `PPModel.save()`
   JSON (which already holds `inputs`, `outputs`, `recorders`, `options`),
   so a definition is a saved `PPModel`.
@@ -267,4 +271,4 @@ Example (illustrative only):
   whether `models/` may hold subfolders or companion files.
 - **First release version.** pptools starts at `0.0.0`; ppedit was at
   0.3.1. First release `26.11.0` per the Eudoxys versioning, or later
-  when ppsim works.
+  when pprun works.

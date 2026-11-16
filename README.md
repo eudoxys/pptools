@@ -13,7 +13,7 @@ project's files:
 |---|---|---|
 | `ppmodel` | available | create and edit PYPOWER and GridLAB-D `module pypower` models (PSS/E `.raw` input), check them, solve PF/OPF |
 | `ppdata` | planned | construct time-series panels of data for objects in a model |
-| `ppsim` | planned | set up and run time-series simulations with `pypower_sim` |
+| `pprun` | planned | set up and run time-series simulations with `pypower_sim` |
 | `ppoutput` | planned | manage and view simulation outputs |
 
 `ppmodel` was developed as [`dchassin/ppedit`](https://github.com/dchassin/ppedit).
@@ -72,6 +72,13 @@ from the command line:
 
     pptools new wecc240 --description "WECC 240-bus summer peak study"
     pptools list
+
+Each tool also has its own command, which opens the tool's page on the
+same server (starting it if it is not running yet):
+
+    ppdata -P wecc240
+    pprun -P wecc240
+    ppoutput -P wecc240
 
 The model editor also runs on its own:
 

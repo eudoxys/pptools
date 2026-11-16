@@ -19,7 +19,7 @@ Update this file in the same PR that adds, moves, or deletes a file.
 - Change the front page: `pptools/static/{index.html,style.css,app.js}`
 - Add a tool or implement a planned one: subpackage `pptools/<tool>/`; row in `TOOLS` (`pptools/tools.py`); register its blueprint in `create_app`; replace `stub_blueprint`; `DESIGN.md` module layout; tests in `pptools/<tool>/_test/`
 - Change how ppmodel is launched: `ModelServers` in `pptools/tools.py`; `/api/ppmodel*` routes in `pptools/server.py`; `test_ppmodel_launch`
-- Add a front CLI option: `pptools/cli.py`, `pptools/__init__.py` Syntax section, `README.md`
+- Add a CLI option: `_common_options` in `pptools/cli.py` (shared by `pptools`, `ppdata`, `pprun`, `ppoutput`), `pptools/__init__.py` Syntax section, `README.md`
 - ppmodel: Add or change a table column: `COLUMNS` (and `GLM_UNITS`) in `pptools/ppmodel/case.py`; validation in `Case.validate`; `pptools/ppmodel/_test/test_case.py`
 - ppmodel: Add a validation rule: `Case.validate`; test in `test_validate_finds_errors`
 - ppmodel: Support another GLM object: `_parse_glm`/`_dump_glm` in `pptools/ppmodel/case.py`; add it to `pptools/ppmodel/_test/data/case3.glm` and its README
@@ -42,7 +42,7 @@ Update this file in the same PR that adds, moves, or deletes a file.
 | Path | Purpose | Notes |
 |---|---|---|
 | `pptools/__init__.py` | package docs, re-exports | pdoc landing page |
-| `pptools/cli.py` | CLI `main()`: serve, new, list | entry point `pptools`; tested by `_test/test_cli.py` |
+| `pptools/cli.py` | CLI `main()`: serve, new, list; `tool_main()` and `serve()` shared by the tool commands | entry point `pptools`; tested by `_test/test_cli.py` |
 | `pptools/project.py` | `Workspace`, `Project`: project folders, record, files | tested by `_test/test_project.py` and its doctest |
 | `pptools/tools.py` | `TOOLS` registry; `ModelServers`: one ppmodel process per model file | tested by `_test/test_server.py` and its doctest |
 | `pptools/server.py` | `create_app()`: front page, project API, ppmodel launcher, tool blueprints | tested by `_test/test_server.py` |
@@ -52,7 +52,10 @@ Update this file in the same PR that adds, moves, or deletes a file.
 | `pptools/static/app.js` | front page logic: projects, folders, uploads, tool cards, running editors | checked by hand |
 | `pptools/.gitignore` | generated-output ignores | |
 | `pptools/ppdata/__init__.py` | ppdata stub: docs and blueprint at `/ppdata/` | planned tool |
-| `pptools/ppsim/__init__.py` | ppsim stub: docs and blueprint at `/ppsim/` | planned tool |
+| `pptools/pprun/__init__.py` | pprun stub: docs and blueprint at `/pprun/` | planned tool |
+| `pptools/ppdata/cli.py` | `ppdata` command (calls `tool_main`) | entry point; tested by `_test/test_cli.py` |
+| `pptools/pprun/cli.py` | `pprun` command (calls `tool_main`) | entry point; tested by `_test/test_cli.py` |
+| `pptools/ppoutput/cli.py` | `ppoutput` command (calls `tool_main`) | entry point; tested by `_test/test_cli.py` |
 | `pptools/ppoutput/__init__.py` | ppoutput stub: docs and blueprint at `/ppoutput/` | planned tool |
 
 ## Front tool tests

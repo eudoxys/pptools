@@ -10,7 +10,7 @@ Layout of a project folder `ROOT/NAME/`:
     pptools.json    project record (see `Project.record`)
     models/         network models (ppmodel: .py, .json, .glm; .raw input only)
     data/           time-series data panels (ppdata)
-    sims/           simulation setups (ppsim)
+    sims/           simulation setups (pprun)
     outputs/        simulation outputs (ppoutput)
 
 Examples
@@ -54,7 +54,7 @@ RECORD = "pptools.json"
 FOLDERS = {
     "models": "Network models edited with ppmodel (.py, .json, .glm; PSS/E .raw input only)",
     "data": "Time-series data panels built with ppdata",
-    "sims": "Simulation setups run with ppsim",
+    "sims": "Simulation setups run with pprun",
     "outputs": "Simulation outputs managed with ppoutput",
     }
 """Standard project subfolders and what each holds"""

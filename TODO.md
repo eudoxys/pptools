@@ -3,6 +3,8 @@
 - [x] Repository scaffold and suite design (see `DESIGN.md`)
 - [x] Front page: projects (create, describe, delete), project folders (upload, download, rename, delete), tool launcher (see `pptools.server`)
 - [x] `pptools serve/new/list` CLI (see `pptools.cli`)
+- [x] `ppdata`, `pprun`, `ppoutput` commands that start or reuse the pptools server (DESIGN.md decision #7)
+- [x] Name the simulation runner `pprun` (DESIGN.md decision #7b)
 - [ ] Agree DESIGN.md draft 1 with the maintainer (decisions 1–12, open questions)
 - [ ] Warn before uploading over a model that is open in ppmodel
 - [ ] Decide the fate of `dchassin/ppedit` and move or cross-reference its open issues
@@ -28,9 +30,9 @@
 - [ ] Panel builder: model objects, case columns, CSV import, profiles, coverage checks, preview
 - [ ] Save panels in the `pypower_sim` input format
 
-# ppsim (simulation runner)
+# pprun (simulation runner)
 
-- [x] Stub page at `/ppsim/` (see `pptools.ppsim`)
+- [x] Stub page at `/pprun/` (see `pptools.pprun`)
 - [ ] Settle the simulation definition format (DESIGN.md open questions)
 - [ ] Add `pypower_sim` as a dependency (decision #11)
 - [ ] Run simulations in a background process with progress and cancel; write run folders to `outputs/`
@@ -44,4 +46,4 @@
 
 - [x] Create `eudoxys/pptools`
 - [ ] Enable Pages (source: GitHub Actions)
-- [ ] First release `26.11.0` (or when ppsim works; DESIGN.md open question)
+- [ ] First release `26.11.0` (or when pprun works; DESIGN.md open question)

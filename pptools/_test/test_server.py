@@ -6,7 +6,7 @@ import urllib.request
 
 def test_meta(client):
     data = client.get("/api/meta").get_json()
-    assert [t["name"] for t in data["tools"]] == ["ppmodel","ppdata","ppsim","ppoutput"]
+    assert [t["name"] for t in data["tools"]] == ["ppmodel","ppdata","pprun","ppoutput"]
     assert list(data["folders"]) == ["models","data","sims","outputs"]
     assert "case9" in data["builtin"]
 
@@ -91,7 +91,7 @@ def test_ppmodel_refuses(post):
 
 def test_stub_pages(client,post):
     post("/api/projects/new",{"name":"s1"})
-    for tool,folder in [("ppdata","data"),("ppsim","sims"),("ppoutput","outputs")]:
+    for tool,folder in [("ppdata","data"),("pprun","sims"),("ppoutput","outputs")]:
         page = client.get(f"/{tool}/?project=s1").data.decode()
         assert "planned" in page and f"{folder}/" in page and "s1" in page
         assert client.get(f"/{tool}/").status_code == 200

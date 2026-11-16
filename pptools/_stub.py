@@ -1,4 +1,4 @@
-"""@private Shared Flask blueprint for planned tools (ppdata, ppsim, ppoutput)
+"""@private Shared Flask blueprint for planned tools (ppdata, pprun, ppoutput)
 
 Each planned tool mounts a blueprint at `/<tool>/` in the front server that
 shows what the tool will do and the files already in its project folder.
@@ -56,7 +56,7 @@ def stub_blueprint(name:str,folder:str,title:str,summary:str,planned:list[str]) 
     Arguments
     ---------
 
-      - `name`: tool name (`ppdata`, `ppsim`, `ppoutput`); mounted at `/<name>/`
+      - `name`: tool name (`ppdata`, `pprun`, `ppoutput`); mounted at `/<name>/`
       - `folder`: project subfolder the tool works on
       - `title`, `summary`: shown on the page
       - `planned`: planned features, one line each

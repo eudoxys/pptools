@@ -12,12 +12,13 @@ simulations of power systems with `eudoxys/pypower_sim`. A front server
 (`pptools serve`, `pptools/server.py`) manages project folders
 (`pptools/project.py`) and opens the tools: `ppmodel` (model editor, moved
 here from `dchassin/ppedit`; one `ppmodel serve` process per open model,
-`pptools/tools.py`) and the planned `ppdata`, `ppsim`, `ppoutput` (stub
+`pptools/tools.py`) and the planned `ppdata`, `pprun`, `ppoutput` (stub
 Flask blueprints from `pptools/_stub.py`). Python 3.10+, pre-alpha.
 
 - Docs site: https://www.eudoxys.com/pptools (pdoc from docstrings)
 - Maintainer: David P. Chassin
-- CLI entry points: `pptools` -> `pptools.cli:main`, `ppmodel` -> `pptools.ppmodel.cli:main`
+- CLI entry points: `pptools` -> `pptools.cli:main`, `ppmodel` -> `pptools.ppmodel.cli:main`,
+  `ppdata`/`pprun`/`ppoutput` -> `pptools.<tool>.cli:main` (all three call `pptools.cli.tool_main`)
 
 ## Where things are
 
@@ -33,8 +34,9 @@ Flask blueprints from `pptools/_stub.py`). Python 3.10+, pre-alpha.
 
 Sibling Eudoxys dependencies: `pypower` (PF/OPF solvers, from GitHub, not
 PyPI; decision #12). Planned: `pypower_sim` (time-series simulation; added
-with ppsim, decision #11). `pypower_sim` installs a `ppsim` command, so the
-browser tools other than ppmodel are not installed as commands (decision #7).
+with pprun, decision #11). `pypower_sim` installs a `ppsim` command, so the
+simulation runner is named `pprun` (decision #7b); don't add a `ppsim`
+command or module.
 
 Upstream references (read-only; use sparse checkout of
 `arras-energy/gridlabd`): `module/pypower/{bus,gen,branch,gencost,dcline}.cpp` for
@@ -54,7 +56,9 @@ planned tools must read and write.
 - POST requests need `X-PPTools: 1` and JSON (uploads: multipart); loopback
   `Host` only unless `allow_remote`. Keep the same guard in new tools.
 - New tools: subpackage + `TOOLS` row + blueprint registered in
-  `create_app`; replace the `stub_blueprint` when implementing.
+  `create_app` + `cli.py` calling `tool_main` (add the tool to
+  `TOOL_TITLES` and `[project.scripts]`); replace the `stub_blueprint`
+  when implementing.
 - Front page: vanilla JS in `pptools/static/app.js` with the `h()` helper;
   modal `<dialog>` forms instead of `alert`/`confirm`.
 
@@ -83,7 +87,7 @@ Anthropic API key to start sessions; tests use a fake client).
   Open/Save as dialogs can reach any path, and it does not notice a model
   file changed on disk (e.g. an upload over it).
 - Deleting files and projects is permanent (DESIGN.md open question "Trash").
-- `ppdata`, `ppsim`, `ppoutput` are placeholders; don't add behavior to
+- `ppdata`, `pprun`, `ppoutput` are placeholders; don't add behavior to
   them without agreeing the design in DESIGN.md first.
 
 ## ppmodel
