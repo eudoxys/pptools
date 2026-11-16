@@ -11,6 +11,7 @@ Update this file in the same PR that adds, moves, or deletes a file.
 3. `pptools/__init__.py` — package docs (spec, limits) and public API
 4. `pptools/server.py` — front server and its API list
 5. `pptools/ppmodel/DESIGN.md` and `pptools/ppmodel/case.py` — for model editor work
+6. `pptools/pprun/__init__.py` and `pptools/pprun/sim.py` — for simulation runner work (DESIGN.md decisions 13–21)
 
 ## Task index
 
@@ -20,6 +21,11 @@ Update this file in the same PR that adds, moves, or deletes a file.
 - Add a tool or implement a planned one: subpackage `pptools/<tool>/`; row in `TOOLS` (`pptools/tools.py`); register its blueprint in `create_app`; replace `stub_blueprint`; `DESIGN.md` module layout; tests in `pptools/<tool>/_test/`
 - Change how ppmodel is launched: `ModelServers` in `pptools/tools.py`; `/api/ppmodel*` routes in `pptools/server.py`; `test_ppmodel_launch`
 - Add a CLI option: `_common_options` in `pptools/cli.py` (shared by `pptools`, `ppdata`, `pprun`, `ppoutput`), `pptools/__init__.py` Syntax section, `README.md`
+- pprun: Add a simulation setting: `Simulation.defaults`/`normalize`/`check`/`_build` in `pptools/pprun/sim.py`; Settings section in `renderSettings` (`pptools/pprun/static/app.js`); DESIGN.md definition schema and decision #18; `pptools/pprun/_test/test_sim.py`
+- pprun: Change what a run writes or how it reports progress: `Simulation.run` (`pptools/pprun/sim.py`), `Runs` (`pptools/pprun/runner.py`); DESIGN.md decisions #15, #16
+- pprun: Add an API route: `pptools/pprun/server.py` (and its docstring API list); `pptools/pprun/_test/test_server.py`; call it from `pptools/pprun/static/app.js`
+- pprun: Change the network view: `Simulation.snapshot`, `/pprun/api/snapshot`, `renderNetwork`/`showSnapshot` in `pptools/pprun/static/app.js`; the `?solve=`/`?view=` handling at the end of `init()` in `pptools/ppmodel/static/app.js`
+- pprun: Change plots or tables: `/pprun/api/table` in `pptools/pprun/server.py`; `lineChart`/`drawTable` in `pptools/pprun/static/app.js`
 - ppmodel: Add or change a table column: `COLUMNS` (and `GLM_UNITS`) in `pptools/ppmodel/case.py`; validation in `Case.validate`; `pptools/ppmodel/_test/test_case.py`
 - ppmodel: Add a validation rule: `Case.validate`; test in `test_validate_finds_errors`
 - ppmodel: Support another GLM object: `_parse_glm`/`_dump_glm` in `pptools/ppmodel/case.py`; add it to `pptools/ppmodel/_test/data/case3.glm` and its README
@@ -52,11 +58,31 @@ Update this file in the same PR that adds, moves, or deletes a file.
 | `pptools/static/app.js` | front page logic: projects, folders, uploads, tool cards, running editors | checked by hand |
 | `pptools/.gitignore` | generated-output ignores | |
 | `pptools/ppdata/__init__.py` | ppdata stub: docs and blueprint at `/ppdata/` | planned tool |
-| `pptools/pprun/__init__.py` | pprun stub: docs and blueprint at `/pprun/` | planned tool |
 | `pptools/ppdata/cli.py` | `ppdata` command (calls `tool_main`) | entry point; tested by `_test/test_cli.py` |
-| `pptools/pprun/cli.py` | `pprun` command (calls `tool_main`) | entry point; tested by `_test/test_cli.py` |
 | `pptools/ppoutput/cli.py` | `ppoutput` command (calls `tool_main`) | entry point; tested by `_test/test_cli.py` |
 | `pptools/ppoutput/__init__.py` | ppoutput stub: docs and blueprint at `/ppoutput/` | planned tool |
+
+## pprun (simulation runner)
+
+| Path | Purpose | Notes |
+|---|---|---|
+| `pptools/pprun/__init__.py` | pprun docs (spec, limits), re-exports | pdoc page `pptools.pprun` |
+| `pptools/pprun/__main__.py` | `python3 -m pptools.pprun run PROJECT RUN` | how `Runs` starts a run process |
+| `pptools/pprun/cli.py` | `pprun` command (calls `tool_main`) | entry point; tested by `pptools/_test/test_cli.py` |
+| `pptools/pprun/sim.py` | `Simulation`: definitions, check, run with `pypower_sim`, snapshot; option metadata | tested by `_test/test_sim.py` and its doctest |
+| `pptools/pprun/runner.py` | `Runs`: run processes, status, cancel; `main` of `__main__` | tested by `_test/test_server.py` and its doctest |
+| `pptools/pprun/server.py` | blueprint at `/pprun/`: page and JSON API | tested by `_test/test_server.py` |
+| `pptools/pprun/static/index.html` | page layout (tabs: Settings, Network, Inputs, Outputs, Runs) | |
+| `pptools/pprun/static/style.css` | page styles (after `/static/style.css`); chart palette | |
+| `pptools/pprun/static/app.js` | page logic: settings form, ppmodel iframe, SVG line charts, data tables, runs | checked by hand (see `CLAUDE.md`) |
+
+## pprun tests
+
+| Path | Purpose | Notes |
+|---|---|---|
+| `pptools/pprun/_test/README.md` | how to run tests | |
+| `pptools/pprun/_test/conftest.py` | `project`, `sim`, `write_panel`, `app`, `client`, `post` fixtures | |
+| `pptools/pprun/_test/test_*.py` | tests | ~10 s; real run processes on case9 |
 
 ## Front tool tests
 

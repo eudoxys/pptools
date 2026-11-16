@@ -12,8 +12,10 @@ simulations of power systems with `eudoxys/pypower_sim`. A front server
 (`pptools serve`, `pptools/server.py`) manages project folders
 (`pptools/project.py`) and opens the tools: `ppmodel` (model editor, moved
 here from `dchassin/ppedit`; one `ppmodel serve` process per open model,
-`pptools/tools.py`) and the planned `ppdata`, `pprun`, `ppoutput` (stub
-Flask blueprints from `pptools/_stub.py`). Python 3.10+, pre-alpha.
+`pptools/tools.py`), `pprun` (simulation runner, a blueprint at `/pprun/`,
+`pptools/pprun/`), and the planned `ppdata`, `ppoutput` (stub Flask
+blueprints from `pptools/_stub.py`). Python 3.12+ (for `pypower_sim`),
+pre-alpha.
 
 - Docs site: https://www.eudoxys.com/pptools (pdoc from docstrings)
 - Maintainer: David P. Chassin
@@ -33,8 +35,8 @@ Flask blueprints from `pptools/_stub.py`). Python 3.10+, pre-alpha.
   to the original repository.
 
 Sibling Eudoxys dependencies: `pypower` (PF/OPF solvers, from GitHub, not
-PyPI; decision #12). Planned: `pypower_sim` (time-series simulation; added
-with pprun, decision #11). `pypower_sim` installs a `ppsim` command, so the
+PyPI; decision #12) and `pypower_sim` (time-series simulation, used by
+pprun; decisions #11, #21). `pypower_sim` installs a `ppsim` command, so the
 simulation runner is named `pprun` (decision #7b); don't add a `ppsim`
 command or module.
 
@@ -72,7 +74,7 @@ signatures, 4-space indent. Don't reformat ported ppmodel code.
 ```bash
 python3.12 -m venv .venv && . .venv/bin/activate
 pip install --upgrade pip && pip install -e . pytest
-pytest            # ~7 s: front tool (pptools/_test) and ppmodel (pptools/ppmodel/_test)
+pytest            # ~20 s: front tool, ppmodel, and pprun (runs case9 a few times)
 make docs
 pptools serve --root /tmp/pptools-demo     # manual UI check
 ppmodel serve pptools/ppmodel/_test/data/case3.glm
@@ -87,8 +89,32 @@ Anthropic API key to start sessions; tests use a fake client).
   Open/Save as dialogs can reach any path, and it does not notice a model
   file changed on disk (e.g. an upload over it).
 - Deleting files and projects is permanent (DESIGN.md open question "Trash").
-- `ppdata`, `pprun`, `ppoutput` are placeholders; don't add behavior to
-  them without agreeing the design in DESIGN.md first.
+- `ppdata`, `ppoutput` are placeholders; don't add behavior to them
+  without agreeing the design in DESIGN.md first.
+
+## pprun (known rough edges; don't "fix" silently; mention or ask)
+
+- Design: DESIGN.md decisions 13–21 (cite them). Runs go through
+  `Runs.start` (a `python -m pptools.pprun run PROJECT RUN` process per
+  run) and are files only: `status.json` is the progress channel, a
+  `cancel` file the stop request.
+- The first `/pprun/api/meta` request is slow (seconds): importing
+  `pypower_sim` imports cvxpy.
+- `pypower_sim` workarounds live in `Simulation._build`: input indexes made
+  UTC, zero `BASE_KV` replaced here (a `PPModel` subclass disables its own),
+  violation tolerances bound onto the instance's `get_violations`. A run
+  cancelled before its first step returns from `run_timeseries` with event
+  `initialization`; `run` treats that as cancelled when the `cancel` file
+  exists.
+- The Network tab is ppmodel in an iframe (`?solve=pf&view=network`,
+  handled at the end of `init()` in `pptools/ppmodel/static/app.js`).
+  Snapshots re-solve a step from the current `data/` panels, not a copy
+  taken at run time.
+- `pypower` PF/OPF ignore `dcline` rows in runs; the check warns.
+- Pages poll `GET /pprun/api/project` each second while a run is going.
+- Chart colors are the dataviz reference palette (`--series-1..8` in
+  `pptools/pprun/static/style.css`); at most 8 series per plot, and a
+  series' color follows its column position in the file.
 
 ## ppmodel
 

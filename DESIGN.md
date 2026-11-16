@@ -1,11 +1,13 @@
-# eudoxys/pptools — package design (draft 2)
+# eudoxys/pptools — package design (draft 3)
 
 Status: draft 1 started 2026-11-16 with the repository scaffold; draft 2,
 2026-11-16: simulator tool named `pprun` (decision #7b) and commands for
-`ppdata`, `pprun`, `ppoutput` (decision #7, reversed). Not yet agreed with
-the maintainer: decisions 1–12 describe the scaffold as built and need
-confirmation; the planned tools (`ppdata`, `pprun`, `ppoutput`) are stubs
-whose design is still open.
+`ppdata`, `pprun`, `ppoutput` (decision #7, reversed); draft 3,
+2026-11-16: `pprun` implemented at the maintainer's request (decisions
+13–21; resolves the open questions on the simulation definition format,
+the panel mapping, and run execution). Not yet agreed with the maintainer:
+decisions 1–12 describe the scaffold as built and need confirmation;
+`ppdata` and `ppoutput` are stubs whose design is still open.
 
 The model editor has its own design record, inherited from
 `dchassin/ppedit`: [`pptools/ppmodel/DESIGN.md`](pptools/ppmodel/DESIGN.md).
@@ -30,7 +32,7 @@ folder:
 |---|---|---|---|
 | Edit the network model | `ppmodel` (from `dchassin/ppedit`) | available | `models/` |
 | Provision time-series data for model objects | `ppdata` | planned (stub) | `data/` |
-| Set up and run simulations | `pprun` | planned (stub) | `sims/` → `outputs/` |
+| Set up and run simulations | `pprun` | available | `sims/` → `outputs/` |
 | Manage and view outputs | `ppoutput` | planned (stub) | `outputs/` |
 | Manage projects and open the tools | front page (`pptools serve`) | available | the projects folder |
 
@@ -68,6 +70,7 @@ reversed decision in place and note the date.
 | 4 | `pptools serve` is the single front tool: it lists, creates, describes, and deletes projects; creates, uploads, downloads, renames, and deletes files in them; and opens each tool on the project's files. Default port 8040 (ppmodel keeps 8050 when run alone). |
 | 5 | A project is a folder `ROOT/NAME/` holding `pptools.json` (`application`, `version`, `name`, `description`, `created`, `modified`, UTC ISO 8601) and the subfolders `models/`, `data/`, `sims/`, `outputs/`. The projects folder `ROOT` is `~/pptools` unless `--root` or `PPTOOLS_ROOT` says otherwise. Folders without `pptools.json` are ignored and never changed. |
 | 6 | Project and file names match `[A-Za-z0-9][A-Za-z0-9_.-]{0,63}`; the front server reads and writes only files directly inside the four subfolders (`Project.resolve`), so nothing outside a project can be reached through its API. |
+| 6b | Each simulation run writes one folder `outputs/<run>/` (run name checked like a file name); `Project.run_path(run,name)` reaches the files directly inside it, `Project.runs()` lists them, and nothing deeper is reachable (2026-11-16, with pprun; decision #6 otherwise unchanged). |
 | 7 | Every tool has a command: `pptools`, `ppmodel`, `ppdata`, `pprun`, `ppoutput`. `ppdata`, `pprun`, and `ppoutput` open their page (`/<tool>/`, optionally `-P PROJECT`) on the pptools server, starting it if none is running on the port (default 8040) and reusing it otherwise (`pptools.cli.tool_main`), so every tool works on the same projects folder through one server; they take the options of `pptools serve`. `ppmodel` keeps its own server (decision #8). *Reversed 2026-11-16:* draft 1 installed only `pptools` and `ppmodel`. |
 | 7b | The simulation runner is named `pprun` (subpackage `pptools.pprun`, page `/pprun/`, command `pprun`), not `ppsim`, because `pypower_sim` already installs a `ppsim` command and both packages are meant to share an environment (2026-11-16). |
 | 8 | The front server starts one `ppmodel serve` process per open model file (ppmodel holds one case per process, ppmodel decision #1) on a free loopback port, opens it in a new browser tab, reuses it when the same file is opened again, stops it when the file is renamed or deleted, and stops all of them when the front server exits. |
@@ -75,6 +78,15 @@ reversed decision in place and note the date.
 | 10 | Files in the project folders are the only state: no database, and no server-side record of which data panels or simulations use which model beyond the files themselves. Every file a tool writes is in a format `pypower_sim` (or ppmodel) reads directly, so a project can be used from Python or the command line without `pptools`. |
 | 11 | `pypower_sim` is the simulation engine: `ppdata` writes its input CSV format (`PPData.set_input`), `pprun` drives `PPModel`/`PPData`/`PPSolver.run_timeseries`, and `ppoutput` reads its output and recorder CSV files and `PPModel.profile`. It becomes a dependency when `pprun` is implemented (not before, to keep the install light while the tools are stubs). |
 | 12 | Sibling Eudoxys packages are dependencies by `git+` URL, never from PyPI: `pypower @ git+https://github.com/eudoxys/pypower`, the same `pypower` that `pypower_sim` uses (ppedit used PyPI `pypower`; all ppmodel tests pass with the Eudoxys build). |
+| 13 | A simulation definition is a pptools JSON file `sims/<sim>.json` (schema under Contracts), not a saved `PPModel`: it names the model file and the input panels instead of embedding the case and the data, so editing a model or a panel changes the next run. The panel-to-case mapping (`table`, `column`, `scale`, `offset`, optional `mapping` column) lives in the definition, so one panel can feed several simulations and models (2026-11-16). |
+| 14 | pprun loads every model with `pptools.ppmodel.Case` (all ppmodel formats, `.py` parsed without executing it, ppmodel Core conventions) and passes `Case.to_ppc(arrays=True)` to `pypower_sim.PPModel`; geodata and `areas` are not passed to `pypower_sim`. |
+| 15 | Each run is one background process (`python -m pptools.pprun run SIM RUNDIR`) started by the server that serves `/pprun/` (`pptools.pprun.runner.Runs`); several runs may go at once. The process writes `status.json` (state, progress, current time step, error count) at least every second and at each event; Cancel creates a `cancel` file that the `progress` callback sees at the next time step (`run_timeseries` event `interrupted`), and the server terminates the process if it has not stopped 10 s later. A run left `running` with no live process (server restart, crash) is reported as `lost`. |
+| 16 | A run folder holds `simulation.json` (the definition as run), `model.json` (the model as run, ppmodel JSON), one output CSV per output (`<table>_<column>.csv`), `recorders.csv` (when there are recorders), `status.json`, `profile.json` (`PPModel.profile`), `errors.txt` (`PPModel.errors`, failures and warnings), and `log.txt` (solver output). Runs are named `<sim>_<UTC YYYYMMDDTHHMMSSZ>`. |
+| 17 | The Network tab shows ppmodel's own page (decision #8 process, in an `<iframe>`), so pprun has the same simple, classic, and one-line views, layouts, labels, and map layers without copying them. Before a run it opens the simulation's model file; for a run it opens a *snapshot* of a chosen time step: pprun re-solves that step from `model.json` and the inputs (as in the run: inputs, OPF per the settings, then PF), writes the solved case to `outputs/<run>/snapshot_<YYYYMMDDTHHMMSSZ>.json`, and opens it with ppmodel, which runs PF on load (`?solve=pf`, a small addition to ppmodel's page) so flows and loadings show. A new snapshot replaces the run's previous one (file and process). |
+| 18 | The Settings tab exposes every option `pypower_sim` takes for a time-series run: the time range (`pandas.date_range` `start`, `end`, `freq` (default `1h`), `tz` (default `UTC`), `inclusive`); `run_timeseries` `use_acopf` (as OPF mode `ac`, `dc`, or `none` = PF only), `stop_on_fail`, `violations` with the `get_violations` tolerances `abs_err`/`rel_err`, and `with_oce` with every `OceOptions` field; every PYPOWER `ppoption` key passed through `PPModel.options` (defaults: `PPModel.default_options` over `ppoption`'s, only overrides stored); `PPModel.default_values["BASE_KV"]`; and the `PPData` arguments of each input (`set_input`), output (`set_output`), and recorder (`set_recorder`). Not exposed: the callbacks (`progress`, `call_on_fail`, `stop_test`; pprun uses them itself), players (`set_player` is broken in `pypower_sim`), the per-solve `update` policy and output timestamp format (not `run_timeseries` arguments). |
+| 19 | Input panels are CSV files in `data/` in `pypower_sim` input format; pprun converts their index to UTC before a run (naive timestamps are taken as UTC) because `run_timeseries` looks rows up by UTC timestamp. Checks before a run report missing files, unknown columns, mapped rows out of range, and time steps missing from an input; a run needs at least two time steps (`run_timeseries` divides by the range's span). |
+| 20 | The Inputs and Outputs tabs plot (SVG line chart, chosen columns, min/max-bucketed to the plot width) and tabulate (paged) every input panel of the simulation and every output and recorder file of a run; columns that are case rows are labeled with the row's id (bus number, generator bus, branch ends). |
+| 21 | `pypower_sim` (`git+https://github.com/eudoxys/pypower_sim`) is a dependency from pprun on (decision #11), and `requires-python` becomes `>=3.12` with it. |
 
 ## Conventions inherited
 
@@ -109,13 +121,20 @@ pptools/
   _test/            front tool tests (fast, no network)
   ppmodel/          model editor (from dchassin/ppedit; see pptools/ppmodel/DESIGN.md)
   ppdata/           __init__.py: stub blueprint at /ppdata/; cli.py: `ppdata` command
-  pprun/            __init__.py: stub blueprint at /pprun/; cli.py: `pprun` command
+  pprun/            simulation runner (decisions 13-21)
+    __init__.py     docs; re-exports Simulation, SimulationError, Runs, blueprint
+    __main__.py     python3 -m pptools.pprun run SIM RUNDIR | snapshot RUNDIR TIME
+    cli.py          `pprun` command (calls tool_main)
+    sim.py          Simulation(project,name,definition): defaults, check, model, run, snapshot;
+                    OPTION_GROUPS (ppoption metadata), OCE_DEFAULTS
+    runner.py       Runs(): run processes, status, cancel; run_status(path)
+    server.py       blueprint at /pprun/: page and API
+    static/         page (index.html, style.css, app.js)
+    _test/          tests (fast; one short case9 run)
   ppoutput/         __init__.py: stub blueprint at /ppoutput/; cli.py: `ppoutput` command
   # planned
   ppdata/panel.py   Panel(model,index): time-series panel for case rows; CSV I/O
   ppdata/server.py  blueprint: panel builder page and API
-  pprun/sim.py      Simulation(project,definition): load, check, run with pypower_sim
-  pprun/server.py   blueprint: simulation setup, run, progress, cancel
   ppoutput/run.py   Run(path): one run folder in outputs/; series, profile, comparison
   ppoutput/server.py blueprint: run list, plots, diagram view
 ```
@@ -129,8 +148,8 @@ pptools/
 | `pptools.json` | project record (decision #5) | front server |
 | `models/*.{py,json,glm,raw}` | network models | ppmodel, uploads |
 | `data/*.csv` | time-series panels in `pypower_sim` input format | ppdata (planned), uploads |
-| `sims/*.json` | simulation definitions | pprun (planned) |
-| `outputs/<run>/` | one folder per simulation run | pprun (planned) |
+| `sims/*.json` | simulation definitions (decision #13) | pprun |
+| `outputs/<run>/` | one folder per simulation run (decision #16) | pprun |
 
 ### Tools
 
@@ -139,6 +158,27 @@ pptools/
 `blueprint`: mounted at `/<name>/`), `title`, and `summary`; the front page
 draws its tool cards from it, so adding a tool means adding a subpackage,
 a `TOOLS` row, and (for a blueprint) registering it in `create_app`.
+
+### Simulation definition (`sims/<sim>.json`)
+
+| field | type | default | notes |
+|---|---|---|---|
+| `application`, `tool`, `version` | str | `pptools`, `pprun`, pptools version | written on save |
+| `model` | str | — | file in `models/` |
+| `start`, `end` | str | — | `pandas.date_range` arguments; offsets allowed (`2020-08-01 00:00-07:00`) |
+| `freq` | str | `1h` | pandas frequency |
+| `tz` | str | `UTC` | time zone of naive `start`/`end` |
+| `inclusive` | str | `both` | `both`, `neither`, `left`, `right` |
+| `opf` | str | `ac` | `ac`, `dc`, `none` (PF only); OPF is skipped by `pypower_sim` when the model has no `gencost` |
+| `stop_on_fail` | bool | `true` | |
+| `violations` | bool | `false` | check limits after each step |
+| `abs_err`, `rel_err` | float/null | `null` | violation tolerances |
+| `oce` | object/null | `null` | `OceOptions` fields: `margin`, `allin`, `setpoints`, `smallangles`, `costs`, `cvx` |
+| `base_kv` | float/null | `230` | replaces zero bus `BASE_KV`; `null` leaves zeros |
+| `options` | object | `{}` | `ppoption` overrides, upper-case keys |
+| `inputs` | list | `[]` | `{file, table, column, scale, offset, mapping}` (`mapping`: column of `table` whose values match the panel's column names, `""` = row numbers) |
+| `outputs` | list | bus `VM`, `VA`; gen `PG`, `QG`; branch `PF`, `QF`, `PT`, `QT` | `{table, column, scale, offset, format}` |
+| `recorders` | list | `cost` when OPF is on | `{name, target (list of case keys), scale, offset, format}` |
 
 ### Front server API
 
@@ -152,8 +192,8 @@ project route returns the full project (`Project.to_dict`: record fields,
 |---|---|---|
 | network model | `models/` file edited in ppmodel | upload, PYPOWER built-in case |
 | time-series inputs | `data/` panels built in ppdata (planned) | uploaded CSV in `pypower_sim` input format |
-| simulation setup | `sims/` definition built in pprun (planned) | none |
-| results | `outputs/` run folders written by pprun (planned) | none |
+| simulation setup | `sims/` definition built in pprun | none |
+| results | `outputs/` run folders written by pprun | none |
 
 Workflow, as the front page presents it:
 
@@ -164,7 +204,7 @@ Workflow, as the front page presents it:
 3. **Provision data (planned).** In ppdata, choose a model, pick objects
    and the case columns that vary in time, and build panels with a UTC
    index and one column per case row; save to `data/`.
-4. **Simulate (planned).** In pprun, combine a model and panels with a time
+4. **Simulate.** In pprun, combine a model and panels with a time
    range and solver options into a definition in `sims/`; run it with
    `pypower_sim` in a background process; each run writes its own folder
    in `outputs/`.
@@ -200,14 +240,27 @@ Example (illustrative only):
 }
 ```
 
+### Run folder (`outputs/<sim>_<UTC timestamp>/`, decision #16)
+
+`status.json` (illustrative only):
+
+```json
+{"state": "done", "event": "completed", "progress": 1.0,
+ "timestamp": "2020-01-02T00:00:00Z", "steps": 25, "errors": 0,
+ "started": "2026-11-16T17:02:11Z", "finished": "2026-11-16T17:02:17Z",
+ "pid": 41233}
+```
+
+`state` is `running`, `done` (all steps run; with `stop_on_fail` off,
+`errors` counts the failures and warnings recorded), `failed` (stopped by
+a failure or an exception; `message` says which), `cancelled`, or `lost`
+(decision #15). Output CSV files are as `pypower_sim` writes them:
+`timestamp` (`YYYY-MM-DD HH:MM:SS UTC`) then one column per case row.
+
 ### Planned (illustrative only, see Open questions)
 
 - `data/<panel>.csv`: `timestamp` (UTC) first, then one column per case row
   of one table/column, as `PPData.set_input` reads.
-- `sims/<sim>.json`: model file, input panels with table/column/scale/offset,
-  `date_range` arguments, solver options, outputs and recorders.
-- `outputs/<sim>_<UTC timestamp>/`: the definition as run, the model as
-  run, output and recorder CSV files, `profile.json`, `errors.txt`.
 
 ## Files and formats
 
@@ -224,8 +277,10 @@ Example (illustrative only):
 | PF/OPF solvers | `eudoxys/pypower` ✔ |
 | model editor | `pptools.ppmodel` (from `dchassin/ppedit`) ✔ |
 | time-series loop, inputs, outputs, recorders | `pypower_sim.PPSolver.run_timeseries`, `PPData` ✔ |
+| violation tolerances in `run_timeseries` | none: it calls `get_violations()` without `abs_err`/`rel_err`; pprun binds them on the model instance |
+| DC lines in time-series runs | `pypower` `runpf`/`runopf` ignore `dcline` rows (only ppmodel's own solver models them); pprun passes them and reports this in the check |
 | players (`PPData.set_player`) | broken in `pypower_sim` (fails before storing anything; its DESIGN.md "Known issues"); needed only if pprun uses players |
-| GLM/JSON models in `pypower_sim` | `PPModel` reads Python case files, functions, and dicts; pprun will convert with `pptools.ppmodel.Case` to the case dict |
+| GLM/JSON models in `pypower_sim` | `PPModel` reads Python case files, functions, and dicts; pprun converts with `pptools.ppmodel.Case` (decision #14) ✔ |
 | initial OCE in `run_timeseries` | success/failure conditions appear inverted (`pypower_sim` DESIGN.md "Known issues"); avoid `with_oce` until fixed |
 | progress and cancel for long runs | `run_timeseries` `progress` and `stop_test` callbacks ✔ |
 | `ppsim` command name | taken by `pypower_sim`; the runner is `pprun` (decision #7b) |
@@ -251,19 +306,15 @@ Example (illustrative only):
   in one direction; or keep both and let them diverge. Its open issues
   (dchassin/ppedit#11, #12, #13, #16, #17, #24, #25, #33, #54) would move
   or be cross-referenced.
-- **Simulation definition format.** A pptools JSON in `sims/` that pprun
-  turns into `pypower_sim` calls; or `pypower_sim`'s own `PPModel.save()`
-  JSON (which already holds `inputs`, `outputs`, `recorders`, `options`),
-  so a definition is a saved `PPModel`.
-- **Where the panel-to-case mapping lives.** In the panel file (a header
-  or a sidecar JSON) so a panel is self-describing; or in the simulation
-  definition, so one panel can feed several models.
 - **ppmodel inside the front server.** Keep one process per model file
   (decision #8); or mount ppmodel under `/ppmodel/<file>/` in the front
   server, which needs ppmodel's page to use relative URLs and one `Editor`
   per file.
-- **Run execution.** Background process per run started by the front
-  server (simple, local); or a queue that can run several at once.
+- **Run queue.** Runs start at once, each in its own process (decision
+  #15); a queue limiting concurrent runs may be needed for large studies.
+- **Run folders on the front page.** The front page lists files only, so
+  `outputs/` shows no runs until ppoutput (or a front-page change) lists
+  `Project.runs()`.
 - **Trash.** Keep deletion permanent; or move deleted files to
   `ROOT/.trash/`.
 - **Model dependencies.** GLM models that `#include` other files

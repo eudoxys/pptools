@@ -64,7 +64,7 @@ time-series simulations of power systems with
 |---|---|---|---|
 | `pptools.ppmodel` | available | create and edit network models; check, PF and OPF | `models/` |
 | `pptools.ppdata` | planned | construct time-series data panels for model objects | `data/` |
-| `pptools.pprun` | planned | set up and run time-series simulations | `sims/` |
+| `pptools.pprun` | available | set up and run time-series simulations with `pypower_sim`; network views, plots and tables of inputs and outputs | `sims/`, `outputs/` |
 | `pptools.ppoutput` | planned | manage and view simulation outputs | `outputs/` |
 
 The front page (`pptools serve`) is the single entry point. It manages
@@ -113,9 +113,9 @@ flowchart LR
 What is not promised
 --------------------
 
-  - `ppdata`, `pprun`, and `ppoutput` are placeholders: their pages list
-    the planned features and the files in their project folder, nothing
-    more.
+  - `ppdata` and `ppoutput` are placeholders: their pages list the
+    planned features and the files in their project folder, nothing more.
+    `pprun` has its own limits (see `pptools.pprun`).
 
   - One user on the local machine: there is no authentication, locking,
     or multi-user support; two browser tabs editing the same project see
@@ -123,8 +123,12 @@ What is not promised
 
   - Deleting files and projects is permanent (no trash folder).
 
-  - Projects store files only; there is no record yet of which data panels
-    and simulations use which models (planned with ppdata and pprun).
+  - Projects store files only; a simulation definition in `sims/` names
+    its model and input panels, and nothing else records which files use
+    which.
+
+  - The front page lists files only, so `outputs/` shows no pprun run
+    folders; runs are listed on the pprun page.
 
 Installation
 ------------

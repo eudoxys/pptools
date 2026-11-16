@@ -24,7 +24,7 @@ maintainers = [
     {name = "David P. Chassin"},
     ]
 readme = "README.md"
-requires-python = ">=3.10" # CI runs 3.12
+requires-python = ">=3.12" # pypower_sim needs 3.12 (decision #21); CI runs 3.12
 keywords = ["eudoxys","python","pypower","pypower_sim","gridlabd","arras-energy","power-flow","time-series","simulation","editor"]
 license-files = ["LICENSE"]
 classifiers = [

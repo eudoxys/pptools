@@ -2504,6 +2504,10 @@ async function init() {
   setState(await api("/api/state"));
   if (!S.state.case.tables.bus.length) show("network");
   if (S.state.source && S.state.source.notes.length) show("results");  // conversion report
+  // ?solve=pf|opf solves on load and ?view=NAME opens a tab (used by pprun's Network tab)
+  const qs = new URLSearchParams(location.search);
+  if (["pf", "opf"].includes(qs.get("solve"))) await act("/api/solve", { kind: qs.get("solve"), algorithm: "NR" }).catch(() => {});
+  if (qs.get("view") && $(`#tabs [data-view="${qs.get("view")}"]`)) show(qs.get("view"));
 }
 
 init().catch(err => toast(err.message, true));

@@ -76,3 +76,20 @@ def test_delete_project(tmp_path):
     ws.create("a")
     ws.delete("a")
     assert ws.projects() == []
+
+def test_run_folders(tmp_path):
+    project = Workspace(str(tmp_path)).create("p")
+    assert project.runs() == []
+    path = project.run_path("base_20200101T000000Z","bus_VM.csv")
+    assert path == os.path.join(project.path,"outputs","base_20200101T000000Z","bus_VM.csv")
+    os.makedirs(os.path.dirname(path))
+    with open(path,"w",encoding="utf-8") as fh:
+        fh.write("x")
+    assert project.runs() == ["base_20200101T000000Z"]
+    assert [f["name"] for f in project.files("outputs",run="base_20200101T000000Z")] == ["bus_VM.csv"]
+    assert project.files("outputs") == [] # run folders are not files
+    for bad in ("../x","a/b",".hidden"):
+        with pytest.raises(ProjectError):
+            project.run_path("r",bad)
+        with pytest.raises(ProjectError):
+            project.run_path(bad)

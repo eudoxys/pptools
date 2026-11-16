@@ -153,10 +153,36 @@ class Project:
             raise ProjectError(f"'{name}' is outside the project folder")
         return path
 
-    def files(self,folder:str) -> list[dict]:
-        """Files in `folder`, sorted by name: `name`, `size` (bytes),
-        `modified` (UTC ISO 8601), `ext` (lower-case extension without the dot)"""
-        base = self.resolve(folder)
+    def run_path(self,run:str,name:str|None=None) -> str:
+        """Absolute path of run folder `outputs/<run>/`, or of file `name`
+        directly inside it (decision #6b); the folder need not exist
+
+        Exceptions
+        ----------
+
+          - `ProjectError`: invalid run or file name
+        """
+        base = self.resolve("outputs",run)
+        if name is None:
+            return base
+        path = os.path.abspath(os.path.join(base,check_name(name,"file name")))
+        if os.path.dirname(path) != base:
+            raise ProjectError(f"'{name}' is outside the run folder")
+        return path
+
+    def runs(self) -> list[str]:
+        """Names of the run folders in `outputs/`, sorted by name"""
+        base = self.resolve("outputs")
+        if not os.path.isdir(base):
+            return []
+        return sorted(x for x in os.listdir(base)
+            if NAME_PATTERN.match(x) and os.path.isdir(os.path.join(base,x)))
+
+    def files(self,folder:str,run:str|None=None) -> list[dict]:
+        """Files in `folder` (or in run folder `outputs/<run>/` when `run`
+        is given), sorted by name: `name`, `size` (bytes), `modified` (UTC
+        ISO 8601), `ext` (lower-case extension without the dot)"""
+        base = self.run_path(run) if run else self.resolve(folder)
         if not os.path.isdir(base):
             return []
         result = []

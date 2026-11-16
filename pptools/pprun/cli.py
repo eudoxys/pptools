@@ -8,8 +8,7 @@ Syntax
 Opens the `pprun` page (`/pprun/`) of the pptools server in a browser,
 starting the server if none is running on the port (default 8040) and
 reusing it otherwise. The options are those of `pptools serve`; see
-`pptools`. `pprun` is planned: the page lists the planned features and the
-files in the project's folder.
+`pptools`. The page is described in `pptools.pprun`.
 
 Examples
 --------

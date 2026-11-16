@@ -260,7 +260,7 @@ function renderWelcome() {
       h("li", {}, "Create a project. Each project is a folder in ", h("code", {}, root), " with ",
         h("code", {}, "models/"), ", ", h("code", {}, "data/"), ", ", h("code", {}, "sims/"), " and ", h("code", {}, "outputs/"), "."),
       h("li", {}, "Add network models (new, from a PYPOWER built-in case, or uploaded) and edit them in ppmodel."),
-      h("li", {}, "Build time-series data panels (ppdata), run simulations (pprun), and review outputs (ppoutput) — planned.")),
+      h("li", {}, "Run time-series simulations with pypower_sim (pprun); build data panels (ppdata) and review outputs (ppoutput) — planned.")),
     h("button", { class: "primary", onclick: newProject }, "New project"));
 }
 

@@ -236,8 +236,8 @@ def tool_main(tool:str,argv:list[str]|None=None) -> int:
     """
     assert tool in TOOL_TITLES,f"unknown tool '{tool}'"
     parser = argparse.ArgumentParser(prog=tool,
-        description=f"pptools {TOOL_TITLES[tool]} in your browser (planned: the page lists "
-            "the planned features and the project's files)",
+        description=f"pptools {TOOL_TITLES[tool]} in your browser" + ("" if tool == "pprun" else
+            " (planned: the page lists the planned features and the project's files)"),
         epilog=f"See https://www.eudoxys.com/pptools/pptools/{tool}.html for full documentation.")
     parser.add_argument("command",nargs="?",choices=["serve"],default="serve",
         help="start (or reuse) the pptools server and open the page (default)")

@@ -91,7 +91,7 @@ def test_ppmodel_refuses(post):
 
 def test_stub_pages(client,post):
     post("/api/projects/new",{"name":"s1"})
-    for tool,folder in [("ppdata","data"),("pprun","sims"),("ppoutput","outputs")]:
+    for tool,folder in [("ppdata","data"),("ppoutput","outputs")]:
         page = client.get(f"/{tool}/?project=s1").data.decode()
         assert "planned" in page and f"{folder}/" in page and "s1" in page
         assert client.get(f"/{tool}/").status_code == 200

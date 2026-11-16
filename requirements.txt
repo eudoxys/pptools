@@ -1,7 +1,9 @@
 # third-party packages (unpinned unless a pin is needed)
 flask
 numpy
+pandas
 scipy
 
 # eudoxys packages (installed from GitHub, not PyPI; decision #6)
 pypower @ git+https://github.com/eudoxys/pypower
+pypower_sim @ git+https://github.com/eudoxys/pypower_sim

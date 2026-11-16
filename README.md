@@ -13,7 +13,7 @@ project's files:
 |---|---|---|
 | `ppmodel` | available | create and edit PYPOWER and GridLAB-D `module pypower` models (PSS/E `.raw` input), check them, solve PF/OPF |
 | `ppdata` | planned | construct time-series panels of data for objects in a model |
-| `pprun` | planned | set up and run time-series simulations with `pypower_sim` |
+| `pprun` | available | set up and run time-series simulations with `pypower_sim`: settings for every `pypower_sim` option, network views, plots and tables of inputs and outputs |
 | `ppoutput` | planned | manage and view simulation outputs |
 
 `ppmodel` was developed as [`dchassin/ppedit`](https://github.com/dchassin/ppedit).
@@ -46,8 +46,11 @@ Install using `pip`:
     pytest
 
 All tests are fast and need no network or credentials; see
-[`pptools/_test/README.md`](pptools/_test/README.md) and
-[`pptools/ppmodel/_test/README.md`](pptools/ppmodel/_test/README.md).
+[`pptools/_test/README.md`](pptools/_test/README.md),
+[`pptools/ppmodel/_test/README.md`](pptools/ppmodel/_test/README.md) and
+[`pptools/pprun/_test/README.md`](pptools/pprun/_test/README.md).
+
+Python 3.12 or later is required (`pypower_sim` needs it).
 
 # Examples
 
