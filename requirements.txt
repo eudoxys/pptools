@@ -7,3 +7,4 @@ scipy
 # eudoxys packages (installed from GitHub, not PyPI; decision #6)
 pypower @ git+https://github.com/eudoxys/pypower
 pypower_sim @ git+https://github.com/eudoxys/pypower_sim
+ppedit @ git+https://github.com/eudoxys/ppedit

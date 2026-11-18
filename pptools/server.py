@@ -2,7 +2,7 @@
 
 `create_app` returns the Flask application behind `pptools serve`: the
 front page (`pptools/static/`), a JSON API over the projects in one
-`pptools.project.Workspace`, the ppmodel launcher, the simulation runner
+`pptools.project.Workspace`, the ppedit launcher, the simulation runner
 at `/pprun/` (`pptools.pprun.server`, its own API), and the planned tools'
 pages mounted at `/ppdata/` and `/ppoutput/`.
 
@@ -28,15 +28,15 @@ All `POST` requests must carry the header `X-PPTools: 1` and a JSON body
   - `GET /api/projects/<name>/file/<folder>/<file>`: the file (download)
   - `POST /api/projects/<name>/models/new`: `{"file", "template"?}` (template
     `""` for an empty case or a built-in case name) -> project
-  - `POST /api/ppmodel/open`: `{"project", "file"}` -> `{"url", "port"}`
-  - `GET /api/ppmodel`: `{"running": [{"project", "file", "url", "port"}, ...]}`
-  - `POST /api/ppmodel/stop`: `{"project", "file"}` -> `{"stopped": bool}`
-  - `POST /api/exit`: stop the ppmodel servers and the front server
+  - `POST /api/ppedit/open`: `{"project", "file"}` -> `{"url", "port"}`
+  - `GET /api/ppedit`: `{"running": [{"project", "file", "url", "port"}, ...]}`
+  - `POST /api/ppedit/stop`: `{"project", "file"}` -> `{"stopped": bool}`
+  - `POST /api/exit`: stop the ppedit servers and the front server
 
 Security
 --------
 
-As in ppmodel (ppmodel decision #29): requests whose `Host` is not a
+As in ppedit (ppedit decision #29): requests whose `Host` is not a
 loopback name are refused unless `allow_remote=True`, and `POST` requests
 need the `X-PPTools` header, which a cross-origin page cannot send without
 a CORS preflight (never granted). There is no authentication. File names
@@ -60,7 +60,7 @@ STATIC = os.path.join(os.path.dirname(__file__),"static")
 """Folder of the front page files"""
 
 MODEL_FORMATS = ["py","json","glm","raw"]
-"""Model file extensions opened with ppmodel (`raw` is input only)"""
+"""Model file extensions opened with ppedit (`raw` is input only)"""
 
 MAX_UPLOAD = 512 * 1024 * 1024
 """Largest accepted upload request, in bytes"""
@@ -82,10 +82,10 @@ def create_app(root:str,allow_remote:bool=False,shutdown=None,models:ModelServer
 
       - `allow_remote`: accept requests whose `Host` is not a loopback name
 
-      - `shutdown`: function called by `POST /api/exit` after the ppmodel
+      - `shutdown`: function called by `POST /api/exit` after the ppedit
         servers are stopped (default: raise `SIGINT` in the server process)
 
-      - `models`: ppmodel server manager (default: a new `ModelServers`)
+      - `models`: ppedit server manager (default: a new `ModelServers`)
 
     Returns
     -------
@@ -158,7 +158,7 @@ def create_app(root:str,allow_remote:bool=False,shutdown=None,models:ModelServer
     @app.get("/api/meta")
     def meta():
         from pptools import __version__ # pylint: disable=import-outside-toplevel
-        from pptools.ppmodel.case import builtin_cases # pylint: disable=import-outside-toplevel
+        from ppedit.case import builtin_cases # pylint: disable=import-outside-toplevel
         return jsonify(version=__version__,root=workspace.root,tools=TOOLS,
             folders=FOLDERS,model_formats=MODEL_FORMATS,builtin=builtin_cases())
 
@@ -238,7 +238,7 @@ def create_app(root:str,allow_remote:bool=False,shutdown=None,models:ModelServer
 
     @app.post("/api/projects/<name>/models/new")
     def new_model(name):
-        from pptools.ppmodel.case import Case, CaseError # pylint: disable=import-outside-toplevel
+        from ppedit.case import Case, CaseError # pylint: disable=import-outside-toplevel
         data = body()
         project = workspace.get(name)
         path = project.resolve("models",data["file"])
@@ -257,22 +257,22 @@ def create_app(root:str,allow_remote:bool=False,shutdown=None,models:ModelServer
         project.update()
         return jsonify(project.to_dict())
 
-    @app.post("/api/ppmodel/open")
-    def ppmodel_open():
+    @app.post("/api/ppedit/open")
+    def ppedit_open():
         data = body()
         path = workspace.get(data["project"]).resolve("models",data["file"])
         if os.path.splitext(path)[1][1:].lower() not in MODEL_FORMATS:
-            raise ProjectError(f"ppmodel opens {', '.join('.'+x for x in MODEL_FORMATS)} files")
+            raise ProjectError(f"ppedit opens {', '.join('.'+x for x in MODEL_FORMATS)} files")
         if not os.path.isfile(path):
             raise ProjectError(f"'models/{data['file']}' not found")
         try:
             port = models.open(path)
         except RuntimeError as err:
-            raise ProjectError(f"ppmodel failed to start: {err}") from err
+            raise ProjectError(f"ppedit failed to start: {err}") from err
         return jsonify(url=model_url(port),port=port)
 
-    @app.get("/api/ppmodel")
-    def ppmodel_running():
+    @app.get("/api/ppedit")
+    def ppedit_running():
         result = []
         for item in models.running():
             where = locate(item["path"])
@@ -281,8 +281,8 @@ def create_app(root:str,allow_remote:bool=False,shutdown=None,models:ModelServer
                     "url":model_url(item["port"]),"port":item["port"]})
         return jsonify(running=result)
 
-    @app.post("/api/ppmodel/stop")
-    def ppmodel_stop():
+    @app.post("/api/ppedit/stop")
+    def ppedit_stop():
         data = body()
         path = workspace.get(data["project"]).resolve("models",data["file"])
         return jsonify(stopped=models.stop(path))

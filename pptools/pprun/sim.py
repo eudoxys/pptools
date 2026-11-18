@@ -13,7 +13,7 @@ Examples
 
     >>> import tempfile
     >>> from pptools.project import Workspace
-    >>> from pptools.ppmodel.case import Case
+    >>> from ppedit.case import Case
     >>> project = Workspace(tempfile.mkdtemp()).create("demo")
     >>> Case.builtin("case9").save(project.resolve("models","case9.py"))
     >>> sim = Simulation.new(project,"base.json","case9.py",start="2020-01-01 00:00",end="2020-01-01 03:00")
@@ -25,7 +25,7 @@ Examples
 Caveats
 -------
 
-  - `pypower` `runpf`/`runopf` ignore `dcline` rows; only ppmodel's own
+  - `pypower` `runpf`/`runopf` ignore `dcline` rows; only ppedit's own
     solver models DC lines (the check warns).
   - Inputs are looked up by exact UTC timestamp (`pypower_sim` decision #9):
     a time step missing from a panel is an input error.
@@ -47,7 +47,7 @@ import functools
 import traceback
 
 from pptools.project import Project, ProjectError, check_name
-from pptools.ppmodel.case import Case, CaseError
+from ppedit.case import Case, CaseError
 
 _logger = logging.getLogger(__file__)
 
@@ -731,7 +731,7 @@ def output_file(item:dict) -> str:
     return f"{item['table']}_{item['column']}.csv"
 
 def _case_columns(table):
-    from pptools.ppmodel.case import COLUMNS # pylint: disable=import-outside-toplevel
+    from ppedit.case import COLUMNS # pylint: disable=import-outside-toplevel
     return COLUMNS.get(table,[])
 
 def _key(value) -> str:

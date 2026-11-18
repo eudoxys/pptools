@@ -1,8 +1,8 @@
-"""Tool registry and the ppmodel launcher
+"""Tool registry and the ppedit launcher
 
 `TOOLS` lists the browser tools the front page offers, in workflow order.
-`ppmodel` holds one case per server process (ppmodel decision #1), so the
-front server starts one `ppmodel serve` process per open model file on a
+`ppedit` holds one case per server process (ppedit decision #1), so the
+front server starts one `ppedit serve` process per open model file on a
 free loopback port (`ModelServers`). The other tools are Flask blueprints
 mounted in the front server at `/<tool>/`.
 
@@ -11,7 +11,7 @@ Examples
 
     >>> from pptools.tools import TOOLS
     >>> [(t["name"],t["status"]) for t in TOOLS]
-    [('ppmodel', 'available'), ('ppdata', 'planned'), ('pprun', 'available'), ('ppoutput', 'planned')]
+    [('ppedit', 'available'), ('ppdata', 'planned'), ('pprun', 'available'), ('ppoutput', 'planned')]
 """
 
 import os
@@ -25,7 +25,7 @@ import subprocess
 _logger = logging.getLogger(__file__)
 
 TOOLS = [
-    {"name":"ppmodel","folder":"models","status":"available","kind":"process",
+    {"name":"ppedit","folder":"models","status":"available","kind":"process",
      "title":"Model editor",
      "summary":"Create and edit network models (PYPOWER .py/.json, GridLAB-D module pypower .glm, "
         "PSS/E .raw input), check them, and solve power flow and OPF."},
@@ -52,15 +52,15 @@ def free_port(host:str="127.0.0.1") -> int:
         return sock.getsockname()[1]
 
 class ModelServers:
-    """`ppmodel serve` processes, one per open model file"""
+    """`ppedit serve` processes, one per open model file"""
 
     STARTUP_TIMEOUT = 30.0
-    """Seconds to wait for a new ppmodel server to accept connections"""
+    """Seconds to wait for a new ppedit server to accept connections"""
 
     def __init__(self,host:str="127.0.0.1"):
-        """Track ppmodel servers listening on `host`"""
+        """Track ppedit servers listening on `host`"""
         self.host = host
-        """Interface the ppmodel servers listen on"""
+        """Interface the ppedit servers listen on"""
         self._lock = threading.Lock()
         self._procs = {} # path -> (Popen,port)
 
@@ -72,7 +72,7 @@ class ModelServers:
         return False
 
     def open(self,path:str) -> int:
-        """Return the port of the ppmodel server for model file `path`,
+        """Return the port of the ppedit server for model file `path`,
         starting one if none is running (a missing file opens as a new case
         that is saved to `path`)
 
@@ -86,7 +86,7 @@ class ModelServers:
             if self._alive(path):
                 return self._procs[path][1]
             port = free_port(self.host)
-            cmd = [sys.executable,"-m","pptools.ppmodel","serve",path,
+            cmd = [sys.executable,"-m","ppedit.cli","serve",path,
                 "--no-browser","--host",self.host,"-p",str(port)]
             _logger.info("starting %s",' '.join(cmd))
             proc = subprocess.Popen(cmd,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE, # pylint: disable=consider-using-with
@@ -95,7 +95,7 @@ class ModelServers:
             while time.monotonic() < deadline:
                 if proc.poll() is not None:
                     err = proc.stderr.read().strip().splitlines()
-                    raise RuntimeError(err[-1] if err else f"ppmodel exited with code {proc.returncode}")
+                    raise RuntimeError(err[-1] if err else f"ppedit exited with code {proc.returncode}")
                 try:
                     with socket.create_connection((self.host,port),timeout=0.5):
                         break
@@ -103,7 +103,7 @@ class ModelServers:
                     time.sleep(0.1)
             else:
                 proc.terminate()
-                raise RuntimeError("ppmodel did not start in time")
+                raise RuntimeError("ppedit did not start in time")
             self._procs[path] = (proc,port)
             return port
 

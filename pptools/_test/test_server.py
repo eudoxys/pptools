@@ -6,7 +6,7 @@ import urllib.request
 
 def test_meta(client):
     data = client.get("/api/meta").get_json()
-    assert [t["name"] for t in data["tools"]] == ["ppmodel","ppdata","pprun","ppoutput"]
+    assert [t["name"] for t in data["tools"]] == ["ppedit","ppdata","pprun","ppoutput"]
     assert list(data["folders"]) == ["models","data","sims","outputs"]
     assert "case9" in data["builtin"]
 
@@ -67,27 +67,27 @@ def test_new_model(client,post):
     status,data = post("/api/projects/s1/models/new",{"file":"empty.py"})
     assert status == 200
 
-def test_ppmodel_launch(client,post):
+def test_ppedit_launch(client,post):
     post("/api/projects/new",{"name":"s1"})
     post("/api/projects/s1/models/new",{"file":"c9.py","template":"case9"})
-    status,data = post("/api/ppmodel/open",{"project":"s1","file":"c9.py"})
+    status,data = post("/api/ppedit/open",{"project":"s1","file":"c9.py"})
     assert status == 200, data
     port = data["port"]
     assert data["url"] == f"http://localhost:{port}/"
     with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/state",timeout=10) as res:
         assert b"\"bus\":9" in res.read()
-    status,again = post("/api/ppmodel/open",{"project":"s1","file":"c9.py"})
+    status,again = post("/api/ppedit/open",{"project":"s1","file":"c9.py"})
     assert again["port"] == port # reused
-    running = client.get("/api/ppmodel").get_json()["running"]
+    running = client.get("/api/ppedit").get_json()["running"]
     assert running == [{"project":"s1","file":"c9.py","url":data["url"],"port":port}]
-    status,data = post("/api/ppmodel/stop",{"project":"s1","file":"c9.py"})
+    status,data = post("/api/ppedit/stop",{"project":"s1","file":"c9.py"})
     assert data == {"stopped":True}
-    assert client.get("/api/ppmodel").get_json()["running"] == []
+    assert client.get("/api/ppedit").get_json()["running"] == []
 
-def test_ppmodel_refuses(post):
+def test_ppedit_refuses(post):
     post("/api/projects/new",{"name":"s1"})
-    assert post("/api/ppmodel/open",{"project":"s1","file":"nothere.glm"})[0] == 400
-    assert post("/api/ppmodel/open",{"project":"s1","file":"x.csv"})[0] == 400
+    assert post("/api/ppedit/open",{"project":"s1","file":"nothere.glm"})[0] == 400
+    assert post("/api/ppedit/open",{"project":"s1","file":"x.csv"})[0] == 400
 
 def test_stub_pages(client,post):
     post("/api/projects/new",{"name":"s1"})

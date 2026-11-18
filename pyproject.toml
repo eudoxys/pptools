@@ -44,7 +44,6 @@ Issues = "https://github.com/eudoxys/pptools/issues"
 
 [project.scripts]
 pptools = "pptools.cli:main"
-ppmodel = "pptools.ppmodel.cli:main"
 ppdata = "pptools.ppdata.cli:main"
 pprun = "pptools.pprun.cli:main"
 ppoutput = "pptools.ppoutput.cli:main"

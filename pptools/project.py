@@ -8,7 +8,7 @@ the files of one project.
 Layout of a project folder `ROOT/NAME/`:
 
     pptools.json    project record (see `Project.record`)
-    models/         network models (ppmodel: .py, .json, .glm; .raw input only)
+    models/         network models (ppedit: .py, .json, .glm; .raw input only)
     data/           time-series data panels (ppdata)
     sims/           simulation setups (pprun)
     outputs/        simulation outputs (ppoutput)
@@ -52,7 +52,7 @@ RECORD = "pptools.json"
 """Name of the project record file in each project folder"""
 
 FOLDERS = {
-    "models": "Network models edited with ppmodel (.py, .json, .glm; PSS/E .raw input only)",
+    "models": "Network models edited with ppedit (.py, .json, .glm; PSS/E .raw input only)",
     "data": "Time-series data panels built with ppdata",
     "sims": "Simulation setups run with pprun",
     "outputs": "Simulation outputs managed with ppoutput",

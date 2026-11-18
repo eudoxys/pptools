@@ -12,7 +12,7 @@ Planned features
     time range, status, and run profile; rename, annotate, and delete runs.
   - Plot output and recorder series (per object and aggregated, e.g. by
     area), duration curves, and limit violations over time.
-  - Show a time step on the network diagram (reusing the ppmodel diagram)
+  - Show a time step on the network diagram (reusing the ppedit diagram)
     with voltages, flows, and loading.
   - Compare runs (differences between outputs of two runs).
   - Export selected series as CSV.

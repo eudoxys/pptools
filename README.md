@@ -11,12 +11,13 @@ project's files:
 
 | Tool | Status | Purpose |
 |---|---|---|
-| `ppmodel` | available | create and edit PYPOWER and GridLAB-D `module pypower` models (PSS/E `.raw` input), check them, solve PF/OPF |
+| [`ppedit`](https://github.com/eudoxys/ppedit) | available | create and edit PYPOWER and GridLAB-D `module pypower` models (PSS/E `.raw` input), check them, solve PF/OPF |
 | `ppdata` | planned | construct time-series panels of data for objects in a model |
 | `pprun` | available | set up and run time-series simulations with `pypower_sim`: settings for every `pypower_sim` option, network views, plots and tables of inputs and outputs |
 | `ppoutput` | planned | manage and view simulation outputs |
 
-`ppmodel` was developed as [`dchassin/ppedit`](https://github.com/dchassin/ppedit).
+The model editor is the separate Eudoxys package
+[`ppedit`](https://github.com/eudoxys/ppedit), installed alongside `pptools`.
 The design and plan are in [DESIGN.md](DESIGN.md).
 
 # Documentation
@@ -28,6 +29,7 @@ See https://www.eudoxys.com/pptools
 Install using Eudoxys Package Manager:
 
     pip install --upgrade eudoxys
+    epm install ppedit
     epm install pptools
 
 Install using `pip`:
@@ -46,8 +48,7 @@ Install using `pip`:
     pytest
 
 All tests are fast and need no network or credentials; see
-[`pptools/_test/README.md`](pptools/_test/README.md),
-[`pptools/ppmodel/_test/README.md`](pptools/ppmodel/_test/README.md) and
+[`pptools/_test/README.md`](pptools/_test/README.md) and
 [`pptools/pprun/_test/README.md`](pptools/pprun/_test/README.md).
 
 Python 3.12 or later is required (`pypower_sim` needs it).
@@ -83,11 +84,11 @@ same server (starting it if it is not running yet):
     pprun -P wecc240
     ppoutput -P wecc240
 
-The model editor also runs on its own:
+The model editor also runs on its own (see the `ppedit` docs):
 
-    ppmodel serve case14.glm
-    ppmodel convert wecc240.raw wecc240.glm
-    ppmodel check case14.glm
+    ppedit serve case14.glm
+    ppedit convert wecc240.raw wecc240.glm
+    ppedit check case14.glm
 
 ## Python
 

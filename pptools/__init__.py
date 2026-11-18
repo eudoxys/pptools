@@ -10,8 +10,6 @@ Syntax
     pprun [serve] ...    (same options as ppdata)
     ppoutput [serve] ... (same options as ppdata)
 
-    ppmodel [-h] ... {serve,convert,check} [FILES ...]
-
 Positional arguments
 --------------------
 
@@ -50,8 +48,10 @@ Optional arguments
   - `--version`: show the package version and exit
 
 `pptools` opens the front page, and `ppdata`, `pprun`, and `ppoutput` open
-their tool's page, all on the same server. `ppmodel` runs the model editor
-on its own; see `pptools.ppmodel`.
+their tool's page, all on the same server. The model editor is the
+separate Eudoxys package [`ppedit`](https://github.com/eudoxys/ppedit)
+(installed with `epm install ppedit`); its own `ppedit` command runs it on
+its own.
 
 Description
 -----------
@@ -62,7 +62,7 @@ time-series simulations of power systems with
 
 | Tool | Status | Purpose | Project folder |
 |---|---|---|---|
-| `pptools.ppmodel` | available | create and edit network models; check, PF and OPF | `models/` |
+| [`ppedit`](https://github.com/eudoxys/ppedit) (separate package) | available | create and edit network models; check, PF and OPF | `models/` |
 | `pptools.ppdata` | planned | construct time-series data panels for model objects | `data/` |
 | `pptools.pprun` | available | set up and run time-series simulations with `pypower_sim`; network views, plots and tables of inputs and outputs | `sims/`, `outputs/` |
 | `pptools.ppoutput` | planned | manage and view simulation outputs | `outputs/` |
@@ -83,11 +83,11 @@ Given a projects folder, `pptools serve` is expected to satisfy:
      subfolders (`models`, `data`, `sims`, `outputs`); names that would
      leave them are refused.
 
-  3. Opening a model starts one `ppmodel` server for that file (or reuses
+  3. Opening a model starts one `ppedit` server for that file (or reuses
      the one already running) on a free loopback port and opens it in a
-     new browser tab; edits are saved by ppmodel to the model file.
+     new browser tab; edits are saved by ppedit to the model file.
 
-  4. Stopping the front server stops every ppmodel server it started.
+  4. Stopping the front server stops every ppedit server it started.
 
   5. `ppdata`, `pprun`, and `ppoutput` start the server only if no pptools
      server answers on the port; otherwise they open their page on the
@@ -96,11 +96,11 @@ Given a projects folder, `pptools serve` is expected to satisfy:
 ```mermaid
 flowchart LR
     front[pptools front page] --> projects[(projects folder)]
-    front --> ppmodel[ppmodel\\none server per model]
+    front --> ppedit[ppedit\\none server per model]
     front --> ppdata[ppdata]
     front --> pprun[pprun]
     front --> ppoutput[ppoutput]
-    ppmodel <--> models[/models/]
+    ppedit <--> models[/models/]
     ppdata --> data[/data/]
     models --> ppdata
     models --> pprun

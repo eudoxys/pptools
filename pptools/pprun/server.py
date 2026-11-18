@@ -2,7 +2,7 @@
 
 `blueprint` is mounted at `/pprun/` by `pptools.server.create_app`, so it
 shares the front server's workspace, its `POST` guard (`X-PPTools: 1`,
-JSON bodies), its loopback-only rule, and its ppmodel launcher
+JSON bodies), its loopback-only rule, and its ppedit launcher
 (`app.config["MODELS"]`). Runs are managed by one
 `pptools.pprun.runner.Runs` per application (`app.config["RUNS"]`).
 
@@ -39,10 +39,10 @@ Errors return `{"error": message}` with status 400 (404 for missing files).
     Otherwise rows `offset`..`offset+limit` (default 0..200): `time` (ISO
     8601), `columns`, `values` (row-major, `null` for NaN).
   - `POST /pprun/api/snapshot`: `{"run", "time"}` -> the snapshot
-    (`Simulation.snapshot`) plus `url`, the ppmodel page showing it
+    (`Simulation.snapshot`) plus `url`, the ppedit page showing it
   - `GET  /pprun/api/file?file=&run=`: download a run file
 
-Models open in ppmodel through the front server's `POST /api/ppmodel/open`.
+Models open in ppedit through the front server's `POST /api/ppedit/open`.
 """
 
 import os
@@ -313,7 +313,7 @@ def snapshot():
         try:
             port = models.open(project.run_path(run,result["file"]))
         except RuntimeError as err:
-            raise SimulationError(f"ppmodel failed to start: {err}") from err
+            raise SimulationError(f"ppedit failed to start: {err}") from err
         host = request.host.rsplit(":",1)[0] if not request.host.startswith("[") \
             else request.host.split("]")[0]+"]"
         result["url"] = f"http://{host}:{port}/?solve=pf&view=network"

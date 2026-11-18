@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from pptools.ppmodel.case import Case
+from ppedit.case import Case
 from pptools.pprun.sim import Simulation, SimulationError, option_groups, headers, row_labels, \
     OUTPUT_DEFAULTS, RUN_FILES, delete_run
 

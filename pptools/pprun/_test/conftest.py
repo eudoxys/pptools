@@ -12,7 +12,7 @@ import pytest
 
 from pptools import create_app
 from pptools.project import Workspace
-from pptools.ppmodel.case import Case
+from ppedit.case import Case
 from pptools.pprun.sim import Simulation
 
 START,END = "2020-01-01 00:00","2020-01-01 05:00"

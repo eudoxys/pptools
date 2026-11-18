@@ -107,7 +107,7 @@ async function loadProject(name) {
 }
 
 async function loadRunning() {
-  try { S.running = (await api("/api/ppmodel")).running; } catch (e) { S.running = []; }
+  try { S.running = (await api("/api/ppedit")).running; } catch (e) { S.running = []; }
   renderRunning();
 }
 
@@ -194,7 +194,7 @@ async function openModel(file) {
   // open the tab first (synchronously, inside the click) so popup blockers allow it
   const tab = window.open("about:blank", "_blank");
   try {
-    const res = await api("/api/ppmodel/open", { project: S.project.name, file });
+    const res = await api("/api/ppedit/open", { project: S.project.name, file });
     if (tab) tab.location = res.url; else window.open(res.url, "_blank");
     loadRunning();
   } catch (err) {
@@ -204,7 +204,7 @@ async function openModel(file) {
 }
 
 async function stopModel(project, file) {
-  await guarded(() => api("/api/ppmodel/stop", { project, file }));
+  await guarded(() => api("/api/ppedit/stop", { project, file }));
   loadRunning();
 }
 
@@ -246,7 +246,7 @@ function renderSidebar() {
 
 function renderRunning() {
   const box = document.getElementById("running");
-  box.replaceChildren(...S.running.map((r) => h("span", { class: "chip", title: `ppmodel on port ${r.port}` },
+  box.replaceChildren(...S.running.map((r) => h("span", { class: "chip", title: `ppedit on port ${r.port}` },
     h("a", { href: r.url, target: "_blank" }, `${r.project}/${r.file}`),
     h("button", { title: "Stop this model editor (unsaved edits are lost)", onclick: () => stopModel(r.project, r.file) }, "×"))));
 }
@@ -259,7 +259,7 @@ function renderWelcome() {
     h("ol", {},
       h("li", {}, "Create a project. Each project is a folder in ", h("code", {}, root), " with ",
         h("code", {}, "models/"), ", ", h("code", {}, "data/"), ", ", h("code", {}, "sims/"), " and ", h("code", {}, "outputs/"), "."),
-      h("li", {}, "Add network models (new, from a PYPOWER built-in case, or uploaded) and edit them in ppmodel."),
+      h("li", {}, "Add network models (new, from a PYPOWER built-in case, or uploaded) and edit them in ppedit."),
       h("li", {}, "Run time-series simulations with pypower_sim (pprun); build data panels (ppdata) and review outputs (ppoutput) — planned.")),
     h("button", { class: "primary", onclick: newProject }, "New project"));
 }
@@ -269,7 +269,7 @@ function toolCards() {
   return h("div", { class: "pipeline" }, (S.meta ? S.meta.tools : []).map((t) => {
     const n = (p.folders[t.folder] || []).length;
     let action;
-    if (t.name === "ppmodel") {
+    if (t.name === "ppedit") {
       action = h("button", { class: "small", onclick: () => { S.folder = "models"; render(); } }, "Models");
     } else {
       action = h("button", { class: "small", onclick: () => { location.href = `/${t.name}/?project=${encodeURIComponent(p.name)}`; } }, "Open");
@@ -292,7 +292,7 @@ function fileRow(f) {
     h("td", { class: "num" }, size(f.size)),
     h("td", {}, when(f.modified)),
     h("td", { class: "actions" },
-      canModel ? h("button", { class: "small primary", title: isRunning ? "Show the running ppmodel editor" : "Edit in ppmodel (new tab)", onclick: () => openModel(f.name) },
+      canModel ? h("button", { class: "small primary", title: isRunning ? "Show the running ppedit editor" : "Edit in ppedit (new tab)", onclick: () => openModel(f.name) },
         isRunning ? "Show" : "Edit") : null,
       h("a", { href: `${href}?download=1` }, h("button", { class: "link small", title: "Download" }, "Download")),
       h("button", { class: "link small", onclick: () => renameFile(f.name) }, "Rename"),

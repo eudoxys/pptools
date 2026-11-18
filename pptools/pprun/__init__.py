@@ -33,7 +33,7 @@ per value of a mapping column), `pprun` is expected to:
    `outputs/<sim>_<UTC timestamp>/` holding the definition and model as
    run, one CSV per output, `recorders.csv`, `status.json`, `profile.json`,
    `errors.txt` and `log.txt`;
-4. show the network in ppmodel's own views (Network tab): the model before
+4. show the network in ppedit's own views (Network tab): the model before
    a run, or a chosen time step of a run re-solved as a snapshot;
 5. plot and tabulate every input panel (Inputs tab) and every output and
    recorder file of a run (Outputs tab), and list runs with their status,

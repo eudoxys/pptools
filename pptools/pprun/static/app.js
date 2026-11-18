@@ -316,7 +316,7 @@ function renderNetwork() {
     frame.dataset.key = "model:" + S.def.model;
     $("#net-note").textContent = "The model as saved; edits here change the model file.";
     guard(async () => {
-      const r = await api("/api/ppmodel/open", { file: S.def.model });
+      const r = await api("/api/ppedit/open", { file: S.def.model });
       frame.src = r.url + "?view=network"; frame.hidden = false; $("#net-empty").textContent = "";
     });
   } else {
@@ -329,7 +329,7 @@ function renderNetwork() {
       if (+range.value > +range.max) range.value = range.max;
       $("#net-time-label").textContent = utc(S.run.times[+range.value]);
       if (!frame.dataset.key || !frame.dataset.key.startsWith("run:" + S.netSource)) {
-        frame.hidden = true; $("#net-empty").textContent = "Choose a time step and press Show time step: pprun re-solves it and opens it in ppmodel.";
+        frame.hidden = true; $("#net-empty").textContent = "Choose a time step and press Show time step: pprun re-solves it and opens it in ppedit.";
         $("#net-note").textContent = "";
       }
     });
